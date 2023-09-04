@@ -4,14 +4,24 @@ import ComponenteBarraHorarios, { BARRA_HORARIOS_ALTURA } from '../componentes/C
 import ComponenteGrafico from '../componentes/ComponenteGrafico';
 import ComponenteListaDeAnestesistas from '../componentes/ComponenteListaDeAnestesistas';
 import NavegadorDeData from '../componentes/NavegadorDeData';
+import { Procedimento } from '../componentes/ProcedimentosAgendados';
+import RetanguloArrastavel from '../componentes/RetanguloArrastavel';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+
+interface Props {
+    procedimentos: Procedimento[];
+}
 
 const ALTURA_ANESTESISTA = 50;
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
-const TelaGraficoEscala: React.FC = () => {
-    const [anestesistas, setAnestesistas] = useState([
+
+
+const TelaGraficoEscala: React.FC<Props> = (props) => {
+    const anestesistasIniciais = [
         { id: 1, posicao: 'C6', nome: 'Caio' },
         { id: 2, posicao: 'C12', nome: 'Gabriel' },
         { id: 3, posicao: 'C13-23', nome: 'Matheus' },
@@ -30,25 +40,28 @@ const TelaGraficoEscala: React.FC = () => {
         { id: 16, posicao: '13', nome: 'L. Felicio' },
         { id: 17, posicao: '14', nome: 'Shigella' },
         //... (e assim por diante)
-    ]);
+        //... (e assim por diante)
+    ];
 
-    const adicionarAnestesista = (novoAnestesista: { id: number, posicao: string, nome: string }) => {
-        setAnestesistas(prevAnestesistas => [...prevAnestesistas, novoAnestesista]);
-    }
 
-    const excluirAnestesista = (id: number) => {
-        setAnestesistas(prevAnestesistas => prevAnestesistas.filter(anestesista => anestesista.id !== id));
-    }
-
+    const [anestesistas, setAnestesistas] = useState(anestesistasIniciais);
     const [horizontalScrollOffset, setHorizontalScrollOffset] = useState(0);
     const [verticalScrollOffset, setVerticalScrollOffset] = useState(0);
     const [dataAtual, setDataAtual] = useState(new Date());
     const alturaListaAnestesistas = ALTURA_ANESTESISTA * anestesistas.length;
-    
+    const scrollViewRef = React.useRef(null);
+
+
+    // Filtrando os procedimentos baseado na data atual
+    const procedimentosDoDia = props.procedimentos?.filter(
+        proc => proc.data.toISOString().slice(0,10) === dataAtual.toISOString().slice(0,10)
+    ) || [];
 
     return (
-        <View style={{ flex: 1 }}>
 
+        <GestureHandlerRootView style={{ flex: 1 }}> 
+        
+        <View style={{ flex: 1 }}>
             {/* Navegador de Data */}
             <NavegadorDeData 
                 dataAtual={dataAtual} 
@@ -60,7 +73,7 @@ const TelaGraficoEscala: React.FC = () => {
                 style={{ 
                     position: 'absolute', 
                     zIndex: 2, 
-                    height: alturaListaAnestesistas + BARRA_HORARIOS_ALTURA, 
+                    height: (alturaListaAnestesistas) + BARRA_HORARIOS_ALTURA, 
                     top: BARRA_HORARIOS_ALTURA*2,
                     overflow: 'hidden',
                 }}
@@ -71,12 +84,9 @@ const TelaGraficoEscala: React.FC = () => {
                     }}
                 >
                     <ComponenteListaDeAnestesistas 
-                            anestesistas={anestesistas} 
-                            height={alturaListaAnestesistas*1.1} 
-                         onAdicionar={adicionarAnestesista} 
-                         onExcluir={excluirAnestesista}
+                        anestesistas={anestesistas} 
+                        height={alturaListaAnestesistas*1.2}
                     />
-
                 </View>
             </View>
 
@@ -84,7 +94,7 @@ const TelaGraficoEscala: React.FC = () => {
             <View style={{ 
                 zIndex: 2, 
                 marginLeft: 150, 
-                width: screenWidth,
+                width: screenWidth*3.6,
                 overflow: 'hidden'
             }}>
                 <View style={{ transform: [{ translateX: -horizontalScrollOffset }] }}>
@@ -107,14 +117,16 @@ const TelaGraficoEscala: React.FC = () => {
                         setHorizontalScrollOffset(event.nativeEvent.contentOffset.x);
                     }}
                 >
+                    
                     <ComponenteGrafico 
                         width={screenWidth * 3.6}
-                        height={screenHeight * 2} 
+                        height={screenHeight * 2}
+                        procedimentos={procedimentosDoDia}
                     />
                 </ScrollView>
             </ScrollView>
-
         </View>
+        </GestureHandlerRootView> 
     );
 };
 

@@ -17,7 +17,7 @@ interface ListaDeAnestesistasProps {
 const ALTURA_BARRA_HORARIOS = 50;
 
 const ComponenteListaDeAnestesistas: React.FC<ListaDeAnestesistasProps> = ({ anestesistas, height, onAdicionar, onExcluir }) => {
-    const ESPACO_VERTICAL = 70;
+    const ESPACO_VERTICAL = 50;
 
     const handleAdicionar = () => {
         // Aqui, você pode criar uma lógica para adicionar um novo anestesista (talvez abrindo um modal ou formulário)

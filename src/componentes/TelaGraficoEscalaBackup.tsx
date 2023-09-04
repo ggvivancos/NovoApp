@@ -3,6 +3,7 @@ import { View, ScrollView, Dimensions } from 'react-native';
 import ComponenteBarraHorarios, { BARRA_HORARIOS_ALTURA } from '../componentes/ComponenteBarraHorarios';
 import ComponenteGrafico from '../componentes/ComponenteGrafico';
 import ComponenteListaDeAnestesistas from '../componentes/ComponenteListaDeAnestesistas';
+import ProcedimentosAgendados from '../componentes/ProcedimentosAgendados';  // ajuste o caminho conforme necessário
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -82,7 +83,8 @@ const TelaGraficoEscala: React.FC = () => {
                 >
                     <ComponenteGrafico 
                         width={screenWidth * 3.6}
-                        height={screenHeight * 2} 
+                        height={screenHeight * 2}
+                        procedimentos={ProcedimentosAgendados}
                     />
                 </ScrollView>
             </ScrollView>
