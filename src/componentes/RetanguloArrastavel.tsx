@@ -10,6 +10,8 @@ const ALTURA_ANESTESISTA = 70;
 const ALTURA_DO_RETANGULO = 50;
 const spaceBetweenHours = 100;
 const SCREEN_WIDTH = Dimensions.get('window').width;
+const pixelsPorHora = spaceBetweenHours;  // Tamanho de uma hora no gráfico
+const pixelsPorMinuto = pixelsPorHora / 60;
 
 const hospitalColors: { [key: string]: string } = {
     'Hospital A': '#FF8888',
@@ -44,7 +46,7 @@ function getLuminance(hexColor: string): number {
 }
 
 function getTextColorBasedOnBackground(hexColor: string): string {
-    return getLuminance(hexColor) > 0.8 ? 'black' : 'white';
+    return getLuminance(hexColor) > 0.8 ? 'darkblue' : 'white';
 }
 
 const RetanguloArrastavel: React.FC<RetanguloArrastavelProps> = ({
@@ -72,6 +74,8 @@ const RetanguloArrastavel: React.FC<RetanguloArrastavelProps> = ({
 
     const translateX = useSharedValue(startX);
     const translateY = useSharedValue(startY - (ALTURA_DO_RETANGULO / 2));
+    const [novaHoraInicio, setNovaHoraInicio] = useState(horaInicio); // FUNÇÃO PARA MUDAR HORÁRIO DE INICIO
+    const [novaPosicaoAnestesista, setNovaPosicaoAnestesista] = useState(posicaoAnestesista); //// FUNÇÃO PARA MUDAR POSIÇÃO DO ANESTESISTA
 
     const onGestureEvent = useAnimatedGestureHandler({
         onStart: (event, ctx) => {
@@ -81,14 +85,21 @@ const RetanguloArrastavel: React.FC<RetanguloArrastavelProps> = ({
         onActive: (event, ctx) => {
             let newTranslateX = ctx.startX + event.translationX;
             let newTranslateY = ctx.startY + event.translationY;
-
+    
             // Garantindo que o retângulo seja arrastado apenas dentro dos limites do gráfico
-            newTranslateX = Math.min(Math.max(newTranslateX, 0), SCREEN_WIDTH - rectWidth);
-            
+            newTranslateX = Math.min(Math.max(newTranslateX, 0), SCREEN_WIDTH*2);
+    
             // Ajustando a posição Y para sempre se alinhar ao anestesista
             const snappedY = Math.round(newTranslateY / ALTURA_ANESTESISTA) * ALTURA_ANESTESISTA + 
                              (ALTURA_ANESTESISTA - ALTURA_DO_RETANGULO) / 2;
-            
+    
+            // Calculando a nova hora de início com base na posição X
+            const hours = Math.floor(newTranslateX / pixelsPorHora);
+            const minutes = Math.floor((newTranslateX % pixelsPorHora) / pixelsPorMinuto);
+            const newStartTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    
+            // TODO: Atualize o estado ou outra variável com newStartTime
+    
             translateX.value = newTranslateX;
             translateY.value = withSpring(snappedY);
         },

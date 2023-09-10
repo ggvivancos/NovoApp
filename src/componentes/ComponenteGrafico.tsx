@@ -69,7 +69,7 @@ const ComponenteGrafico: React.FC<Props> = React.forwardRef((props, ref) => {
                             y1="10" 
                             x2={index * spaceBetweenHours + DESLOCAMENTO} 
                             y2={height} 
-                            stroke="#aaa" 
+                            stroke="skyblue" 
                             strokeWidth="1.5"
                         />
                     ))}
@@ -81,7 +81,7 @@ const ComponenteGrafico: React.FC<Props> = React.forwardRef((props, ref) => {
                             y1="10" 
                             x2={index * spaceBetweenHours + (spaceBetweenHours / 2) + DESLOCAMENTO} 
                             y2={height} 
-                            stroke="black" 
+                            stroke="darkblue" 
                             strokeWidth="2.5"
                         />
                     ))}

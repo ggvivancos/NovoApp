@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     textoData: {
-        fontSize: 19,
+        fontSize: 15,
         fontWeight: 'bold',
         color: 'black',
     }

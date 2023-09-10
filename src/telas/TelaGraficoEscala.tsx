@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, ScrollView, Dimensions } from 'react-native';
+import { View, ScrollView, Dimensions,TouchableOpacity, Text, TouchableWithoutFeedback } from 'react-native';
 import ComponenteBarraHorarios, { BARRA_HORARIOS_ALTURA } from '../componentes/ComponenteBarraHorarios';
 import ComponenteGrafico from '../componentes/ComponenteGrafico';
 import ComponenteListaDeAnestesistas from '../componentes/ComponenteListaDeAnestesistas';
@@ -7,10 +7,13 @@ import NavegadorDeData from '../componentes/NavegadorDeData';
 import { Procedimento } from '../componentes/ProcedimentosAgendados';
 import RetanguloArrastavel from '../componentes/RetanguloArrastavel';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Sidebar from '../componentes/sidebar/sidebar';
+import TelaAnestesistas from './CRUD/Anestesistas/TelaAnestesistas';
+import CabeçalhoGlobal from '../componentes/CabeçalhoGlobal'
 
 
 interface Props {
-    procedimentos: Procedimento[];
+    procedimentos?: Procedimento[];
 }
 
 const ALTURA_ANESTESISTA = 50;
@@ -18,9 +21,21 @@ const ALTURA_ANESTESISTA = 50;
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
+const styles = {
+    telaGraficoEscala: {
+        // Seus estilos vão aqui, por exemplo:
+        flex: 1,
+        backgroundColor: 'white',
+        // ... outros estilos que você desejar
+    }
+};
 
 
 const TelaGraficoEscala: React.FC<Props> = (props) => {
+    
+    const [sidebarVisible, setSidebarVisible] = useState(false);
+    const [telaAtual, setTelaAtual] = useState<'principal' | 'crudAnestesistas'>('principal');
+   
     const anestesistasIniciais = [
         { id: 1, posicao: 'C6', nome: 'Caio' },
         { id: 2, posicao: 'C12', nome: 'Gabriel' },
@@ -53,13 +68,45 @@ const TelaGraficoEscala: React.FC<Props> = (props) => {
 
 
     // Filtrando os procedimentos baseado na data atual
-    const procedimentosDoDia = props.procedimentos?.filter(
-        proc => proc.data.toISOString().slice(0,10) === dataAtual.toISOString().slice(0,10)
-    ) || [];
+    const procedimentosDoDia = props.procedimentos
+  ? props.procedimentos.filter(
+      proc => proc.data.toISOString().slice(0,10) === dataAtual.toISOString().slice(0,10)
+    )
+  : [];
 
     return (
 
-        <GestureHandlerRootView style={{ flex: 1 }}> 
+<View style={styles.telaGraficoEscala}>
+    {sidebarVisible && (
+        <TouchableWithoutFeedback onPress={() => setSidebarVisible(false)}>
+            <View
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 5,
+                    backgroundColor: 'transparent' // Garantindo que o View seja clicável
+                }}
+            />
+        </TouchableWithoutFeedback>
+    )}
+    <CabeçalhoGlobal title="ANESTESISTAS" onMenuPress={() => setSidebarVisible(!sidebarVisible)} />
+    {sidebarVisible && <Sidebar onItemSelect={(itemId) => {
+    console.log("Item selecionado:", itemId);
+    if (itemId === 1) {
+        setTelaAtual('crudAnestesistas');
+        setSidebarVisible(false);
+        console.log("Tela Atual:", telaAtual);
+    }
+}} />}
+
+        
+        {telaAtual === 'crudAnestesistas' ? (
+    <TelaAnestesistas />
+) : (
+<GestureHandlerRootView style={{ flex: 1 }}> 
         
         <View style={{ flex: 1 }}>
             {/* Navegador de Data */}
@@ -126,8 +173,11 @@ const TelaGraficoEscala: React.FC<Props> = (props) => {
                 </ScrollView>
             </ScrollView>
         </View>
-        </GestureHandlerRootView> 
+     </GestureHandlerRootView>
+    )}
+ </View>
+        
     );
-};
+                };
 
 export default TelaGraficoEscala;
