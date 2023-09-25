@@ -8,8 +8,9 @@ import { Procedimento } from '../componentes/ProcedimentosAgendados';
 import RetanguloArrastavel from '../componentes/RetanguloArrastavel';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Sidebar from '../componentes/sidebar/sidebar';
-import TelaAnestesistas from './CRUD/Anestesistas/TelaAnestesistas';
 import CabeçalhoGlobal from '../componentes/CabeçalhoGlobal'
+import GlobalLayout from '../layouts/GlobalLayout';
+import IndexAnestesista from './anestesistas/IndexAnestesista';
 
 
 interface Props {
@@ -23,10 +24,10 @@ const screenHeight = Dimensions.get('window').height;
 
 const styles = {
     telaGraficoEscala: {
-        // Seus estilos vão aqui, por exemplo:
+        
         flex: 1,
         backgroundColor: 'white',
-        // ... outros estilos que você desejar
+       
     }
 };
 
@@ -76,6 +77,8 @@ const TelaGraficoEscala: React.FC<Props> = (props) => {
 
     return (
 
+<GlobalLayout showBackButton={false}>
+
 <View style={styles.telaGraficoEscala}>
     {sidebarVisible && (
         <TouchableWithoutFeedback onPress={() => setSidebarVisible(false)}>
@@ -92,19 +95,11 @@ const TelaGraficoEscala: React.FC<Props> = (props) => {
             />
         </TouchableWithoutFeedback>
     )}
-    <CabeçalhoGlobal title="ANESTESISTAS" onMenuPress={() => setSidebarVisible(!sidebarVisible)} />
-    {sidebarVisible && <Sidebar onItemSelect={(itemId) => {
-    console.log("Item selecionado:", itemId);
-    if (itemId === 1) {
-        setTelaAtual('crudAnestesistas');
-        setSidebarVisible(false);
-        console.log("Tela Atual:", telaAtual);
-    }
-}} />}
+    
 
         
         {telaAtual === 'crudAnestesistas' ? (
-    <TelaAnestesistas />
+    <IndexAnestesista />
 ) : (
 <GestureHandlerRootView style={{ flex: 1 }}> 
         
@@ -176,8 +171,8 @@ const TelaGraficoEscala: React.FC<Props> = (props) => {
      </GestureHandlerRootView>
     )}
  </View>
-        
+ </GlobalLayout> 
     );
-                };
+ };
 
 export default TelaGraficoEscala;

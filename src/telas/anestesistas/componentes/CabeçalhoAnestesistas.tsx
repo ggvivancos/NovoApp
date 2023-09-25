@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import CabeçalhoGlobal from '../../../componentes/CabeçalhoGlobal';
+
 
 
 interface Props {
@@ -11,15 +11,8 @@ interface Props {
 const CabeçalhoAnestesistas: React.FC<Props> = ({ style }) => {
     return (
         <View style={[styles.header, style]}>
-            <TouchableOpacity>
-                <Icon name="arrow-left" size={20} color="white" />
-            </TouchableOpacity>
-
-            <Text style={styles.headerTitle}>ANESTESISTAS</Text>
-            
-            <TouchableOpacity style={styles.addIconContainer}>
-                <Icon name="plus" size={24} color="skyblue" />
-            </TouchableOpacity>
+        <Text style={styles.headerTitle}>Anestesistas</Text>
+        
         </View>
     );
 };
@@ -27,24 +20,24 @@ const CabeçalhoAnestesistas: React.FC<Props> = ({ style }) => {
 const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        padding: 10,
+        padding: 0,
         borderRadius: 10,
         backgroundColor: 'skyblue',
         width: '100%'
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: 'bold',
         color: 'white', 
         flex: 1,
         textAlign: 'center',
-        marginLeft: 20  // Adicionado para compensar o espaço do ícone do menu
+        marginRight: 50,
     },
-    menuIconContainer: {
-        position: 'absolute',
-        left: 50,  // Posiciona o ícone do menu ao lado da seta
+    iconContainer: {
+        width: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     addIconContainer: {
         width: 40,
@@ -63,5 +56,6 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
 });
+
 
 export default CabeçalhoAnestesistas;

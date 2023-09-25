@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "postgres",
+    "password": "152436",
+    "database": "ServidorEscala",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "Escala",
+    "password": "152436",
+    "database": "ServidorEscala_Test",
+    "host": "localhost",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "Escala",
+    "password": "152436",
+    "database": "ServidorEscala_production",
+    "host": "localhost",
+    "dialect": "postgres"
+}
+}
