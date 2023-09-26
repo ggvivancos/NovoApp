@@ -1,8 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-
-
+import { colors } from '../../../styles/themes';  // Importar cores do themes.js
+import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
 interface Props {
     style?: object;
@@ -11,8 +10,7 @@ interface Props {
 const CabeçalhoAnestesistas: React.FC<Props> = ({ style }) => {
     return (
         <View style={[styles.header, style]}>
-        <Text style={styles.headerTitle}>Anestesistas</Text>
-        
+            <Text style={styles.headerTitle}>Anestesistas</Text>
         </View>
     );
 };
@@ -22,40 +20,39 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 0,
-        borderRadius: 10,
-        backgroundColor: 'skyblue',
+        borderRadius: moderateScale(10),
+        backgroundColor: colors.primary,
         width: '100%'
     },
     headerTitle: {
-        fontSize: 20,
+        fontSize: moderateScale(16),
         fontWeight: 'bold',
-        color: 'white', 
+        color: colors.text,
         flex: 1,
         textAlign: 'center',
-        marginRight: 50,
+        marginRight: moderateScale(50),
     },
     iconContainer: {
-        width: 40,
+        width: moderateScale(40),
         justifyContent: 'center',
         alignItems: 'center',
     },
     addIconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: moderateScale(40),
+        height: moderateScale(40),
+        borderRadius: moderateScale(20),
         backgroundColor: '#FFF',
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
-            height: 1,
+            height: verticalScale(1),
         },
         shadowOpacity: 0.22,
-        shadowRadius: 2.22,
+        shadowRadius: moderateScale(2.22),
         elevation: 3,
     },
 });
-
 
 export default CabeçalhoAnestesistas;

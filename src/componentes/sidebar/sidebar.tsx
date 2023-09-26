@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableWithoutFeedback, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableWithoutFeedback, StyleSheet, Animated, ScrollView } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navegação/NavigationTypes';
+import { colors, fonts } from '../../styles/themes';
 
 interface SidebarProps {
     onItemSelect?: (itemId: number) => void;
@@ -16,12 +17,12 @@ const SidebarItem: React.FC<{ title: string; onPress: () => void; isSubMenu?: bo
         Animated.sequence([
             Animated.timing(animation, {
                 toValue: 0.9,
-                duration: 50,
+                duration: 100,
                 useNativeDriver: true,
             }),
             Animated.timing(animation, {
                 toValue: 1,
-                duration: 50,
+                duration: 100,
                 useNativeDriver: true,
             }),
         ]).start(onPress);
@@ -32,7 +33,8 @@ const SidebarItem: React.FC<{ title: string; onPress: () => void; isSubMenu?: bo
             <Animated.Text style={[
                 styles.sidebarItem,
                 isSubMenu && styles.subMenuItem,
-                { transform: [{ scale: animation }] }
+                { transform: [{ scale: animation }] },
+                fonts.regular
             ]}>
                 {title}
             </Animated.Text>
@@ -89,7 +91,7 @@ const SubMenu: React.FC<{ title: string; children: React.ReactNode }> = ({ title
         <View>
             <TouchableWithoutFeedback onPress={handleToggle}>
                 <View style={styles.subMenuHeader}>
-                    <Text style={styles.sidebarItem}>{title}</Text>
+                    <Text style={[styles.sidebarItem, fonts.regular]}>{title}</Text>
                     <Animated.Text style={[
                         styles.arrowIcon,
                         {
@@ -101,7 +103,7 @@ const SubMenu: React.FC<{ title: string; children: React.ReactNode }> = ({ title
                             }]
                         }
                     ]}>
-                        {'> l'}
+                        {'>'}
                     </Animated.Text>
                 </View>
             </TouchableWithoutFeedback>
@@ -122,7 +124,6 @@ const SubMenu: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 
 const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSelect }) => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-
     const sidebarAnim = useRef(new Animated.Value(-200)).current;
 
     useEffect(() => {
@@ -133,19 +134,24 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
         }).start();
     }, []);
 
+    const handleClose = () => {
+        Animated.timing(sidebarAnim, {
+            toValue: 200,
+            duration: 300,
+            useNativeDriver: true
+        }).start(() => onClose && onClose());
+    };
+
     return (
         <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarAnim }] }]}>
-            <TouchableWithoutFeedback onPress={onClose}>
-                <Text style={styles.closeButton}>×</Text>
-            </TouchableWithoutFeedback>
-
+            <ScrollView showsVerticalScrollIndicator={false}>
             <SidebarItem title="ESCALA DIÁRIA" onPress={() => { }} />
             <SidebarItem title="AGENDA DE PROCEDIMENTOS" onPress={() => { }} />
 
             <SubMenu title="BANCO DE DADOS">
                 <SidebarItem title="Anestesistas" onPress={() => {
                     navigation.navigate('IndexAnestesista');
-                    onClose && onClose();
+                    handleClose();
                 }} />
                 <SidebarItem title="Cirurgias" onPress={() => { }} />
                 <SidebarItem title="Cirurgiões" onPress={() => { }} />
@@ -158,6 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
 
             <SidebarItem title="ESTATÍSTICAS" onPress={() => { }} />
             <SidebarItem title="CONFIGURAÇÕES" onPress={() => { }} />
+            </ScrollView>
         </Animated.View>
     );
 };
@@ -168,7 +175,7 @@ const styles = StyleSheet.create({
         top: 0,
         width: 200,
         height: "100%",
-        backgroundColor: 'rgba(135, 206, 235, 1)',
+        backgroundColor: colors.primary,
         borderRightWidth: 0,
         borderRightColor: '#ddd',
         zIndex: 10
@@ -178,14 +185,13 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         textAlign: 'right',
-        color: 'white'
+        color: colors.text
     },
     sidebarItem: {
         padding: 15,
         borderBottomWidth: 0,
         borderBottomColor: '#ddd',
-        color: 'white',
-        fontSize: 16,
+        color: colors.text,
     },
     subMenuItem: {
         paddingLeft: 30
@@ -196,9 +202,9 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between'
     },
     arrowIcon: {
-        fontSize: 24,
-        paddingRight: 15,
-        color: 'white'
+        fontSize: 20,
+        paddingRight: 25,
+        color: colors.text
     }
 });
 
