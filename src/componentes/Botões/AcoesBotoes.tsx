@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     deletarBotao: {
-        marginRight: -10,
+        marginRight: 0,
     },
 });
 

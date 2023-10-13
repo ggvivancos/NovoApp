@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, Alert } from 'react-native';
-import CabeçalhoAnestesistas from './componentes/CabeçalhoAnestesistas';
+import CabecalhoAnestesistas from './componentes/CabecalhoAnestesistas';
 import GlobalLayout from '../../layouts/GlobalLayout';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import SearchbarAnestesistas from './componentes/SearchbarAnestesistas';
@@ -155,7 +155,7 @@ const IndexAnestesista = () => {
 
     return (
         
-            <GlobalLayout showBackButton={true} headerComponent={<CabeçalhoAnestesistas style={styles.cabecalhoPadding} />}>
+            <GlobalLayout showBackButton={true} headerComponent={<CabecalhoAnestesistas style={styles.cabecalhoPadding} />}>
             <QueryClientProvider client={queryClient}>
                 <View style={styles.searchAndFilterContainer}>
                     <SearchbarAnestesistas 

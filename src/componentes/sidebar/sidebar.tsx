@@ -153,8 +153,11 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
                     navigation.navigate('IndexAnestesista');
                     handleClose();
                 }} />
+                <SidebarItem title="Cirurgiões" onPress={() => { 
+                    navigation.navigate('IndexCirurgiao');
+                    handleClose();
+                }} />
                 <SidebarItem title="Cirurgias" onPress={() => { }} />
-                <SidebarItem title="Cirurgiões" onPress={() => { }} />
                 <SidebarItem title="Grupos de Anestesia" onPress={() => { }} />
                 <SidebarItem title="Hospitais" onPress={() => { }} />
                 <SidebarItem title="Salas de Cirurgia" onPress={() => { }} />
