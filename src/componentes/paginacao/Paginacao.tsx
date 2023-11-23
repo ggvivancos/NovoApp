@@ -4,11 +4,6 @@ export type PaginacaoProps = {
     currentPage: number;
     totalPages: number;
     onPageChange: (page: number) => void;
-    hasNextPage?: boolean;
-    isFetchingNextPage?: boolean;
-    fetchNextPage?: () => void;
-    isFetchingPreviousPage?: boolean;
-    fetchPreviousPage?: () => void;
 };
 
 const Paginacao: React.FC<PaginacaoProps> = ({ currentPage, totalPages, onPageChange }) => {
