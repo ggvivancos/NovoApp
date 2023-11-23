@@ -1,21 +1,21 @@
-// AcoesBotoes.tsx
+// AcoesBotoesPretos.tsx
 import React from 'react';
 import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-interface AcoesBotoesProps {
+interface AcoesBotoesPretosProps {
     onEditarPress?: () => void;
     onDeletarPress?: () => void;
 }
 
-const AcoesBotoes: React.FC<AcoesBotoesProps> = ({ onEditarPress, onDeletarPress }) => {
+const AcoesBotoesPretos: React.FC<AcoesBotoesPretosProps> = ({ onEditarPress, onDeletarPress }) => {
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.editarBotao} onPress={onEditarPress}>
-                <Icon name="pencil" size={22} color="skyblue" />
+                <Icon name="pencil" size={18} color="#3C3C3C" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.deletarBotao} onPress={onDeletarPress}>
-                <Icon name="trash" size={22} color="#ff6666" />
+                <Icon name="trash" size={18} color="#3C3C3C" />
             </TouchableOpacity>
         </View>
     );
@@ -27,11 +27,11 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     editarBotao: {
-        marginRight: 5,
+        marginRight: 15,  // Reduzido para ser discretamente menor
     },
     deletarBotao: {
-        marginRight: 5,
+        marginRight: 4,  // Reduzido para ser discretamente menor
     },
 });
 
-export default AcoesBotoes;
+export default AcoesBotoesPretos;

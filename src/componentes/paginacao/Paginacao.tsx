@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export type PaginacaoProps = {
@@ -7,11 +8,15 @@ export type PaginacaoProps = {
 };
 
 const Paginacao: React.FC<PaginacaoProps> = ({ currentPage, totalPages, onPageChange }) => {
+    console.log("currentPage:", currentPage);
+    console.log("totalPages:", totalPages);
+    
+    
     return (
         <View style={styles.paginationContainer}>
             {currentPage > 1 && (
-                <TouchableOpacity onPress={() => onPageChange(currentPage - 1)}>
-                    <Text style={styles.paginationText}>Anterior</Text>
+                <TouchableOpacity onPress={() => onPageChange(currentPage - 1)} style={styles.paginationText}>
+                    <Text>Anterior</Text>
                 </TouchableOpacity>
             )}
             
@@ -19,20 +24,24 @@ const Paginacao: React.FC<PaginacaoProps> = ({ currentPage, totalPages, onPageCh
                 <TouchableOpacity
                     key={index}
                     onPress={() => onPageChange(index + 1)}
-                    style={[styles.paginationText, currentPage === index + 1 && styles.activePage]}
+                    style={[
+                        styles.paginationText, 
+                        (currentPage === index + 1) ? styles.activePage : styles.inactivePage
+                    ]}
                 >
                     <Text>{index + 1}</Text>
                 </TouchableOpacity>
             ))}
 
             {currentPage < totalPages && (
-                <TouchableOpacity onPress={() => onPageChange(currentPage + 1)}>
-                    <Text style={styles.paginationText}>Próxima</Text>
+                <TouchableOpacity onPress={() => onPageChange(currentPage + 1)} style={styles.paginationText}>
+                    <Text>Próxima</Text>
                 </TouchableOpacity>
             )}
         </View>
     );
 };
+
 
 const styles = StyleSheet.create({
     paginationContainer: {
@@ -49,7 +58,10 @@ const styles = StyleSheet.create({
         borderColor: '#ccc'
     },
     activePage: {
-        backgroundColor: '#ddd'
+        backgroundColor: 'skyblue'
+    },
+    inactivePage: {
+        backgroundColor: 'white'
     }
 });
 

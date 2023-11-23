@@ -3,7 +3,7 @@ import { View, TextInput, StyleSheet, ViewStyle, TouchableOpacity } from 'react-
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
-interface SearchbarConveniosProps {
+interface SearchbarCoresProps {
     onSearch?: (searchText: string) => void;
     onSearchChange?: (text: string) => void;
     onSearchSubmit?: () => void;
@@ -11,12 +11,12 @@ interface SearchbarConveniosProps {
     placeholder?: string;
 }
 
-const SearchbarConvenios: React.FC<SearchbarConveniosProps> = ({ 
+const SearchbarCores: React.FC<SearchbarCoresProps> = ({ 
     onSearch, 
     onSearchChange, 
     onSearchSubmit, 
     style, 
-    placeholder = "Pesquisar convênio..." 
+    placeholder = "Pesquisar cor..." 
 }) => {
     const [searchText, setSearchText] = useState<string>('');
 
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SearchbarConvenios;
+export default SearchbarCores;

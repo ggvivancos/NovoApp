@@ -10,8 +10,8 @@ export type RootStackParamList = {
     NovoCirurgiao: undefined;
     IndexCirurgia: undefined;
     NovoCirurgia: undefined;
-    //IndexHospital: undefined;
-    //NovoHospital: undefined;
+    IndexHospital: undefined;
+    NovoHospital: undefined;
     IndexEspecialidade: undefined;
     NovoEspecialidade: undefined;
     IndexConvenio: undefined;
@@ -19,10 +19,13 @@ export type RootStackParamList = {
     NovoSetor: undefined;
     IndexSalaDeCirurgia: undefined;
     NovoSalaDeCirurgia: undefined;
-    IndexGruposDeAnestesia: undefined;
-    NovoGruposDeAnestesia: undefined;
+    IndexGrupoDeAnestesia: undefined;
+    NovoGrupoDeAnestesia: undefined;
     IndexProcedimento: undefined;
     NovoProcedimento: undefined;
+    IndexCor: undefined;
+    NovoCor: undefined;
+    IndexSetorESala: undefined;
     // ...
   };
   

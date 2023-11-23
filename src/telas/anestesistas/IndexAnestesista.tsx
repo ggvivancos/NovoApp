@@ -43,6 +43,10 @@ const IndexAnestesista = () => {
     const [grupos, setGrupos] = useState<GrupoDeAnestesia[]>([]);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const navigation = useNavigation();
+    const [currentPageState, setCurrentPageState] = useState<number>(1);
+
+
+
 
     const {
         data,
@@ -60,6 +64,28 @@ const IndexAnestesista = () => {
             }
         }
     );
+
+    const handlePageChange = async (newPage: number) => {
+        console.log("handlePageChange -> newPage:", newPage);
+        setCurrentPageState(newPage);
+    
+        try {
+            const response = await AnestesistaService.obterAnestesistas(25, newPage); 
+            if(response && Array.isArray(response.data)) {
+                const sortedData = response.data.sort((a: Anestesista, b: Anestesista) => a.nomecompleto.localeCompare(b.nomecompleto));
+                
+                // Chame a função para mapear os anestesistas para seus grupos
+                await mapAnestesistasToGrupos(sortedData);
+            } else {
+                console.error("A resposta da API não é um array ou está indefinida:", response);
+            }
+        } catch (error) {
+            console.error("Erro ao buscar dados da página:", newPage, error);
+            // Aqui você pode adicionar um estado para gerenciar mensagens de erro na UI se desejar.
+        }
+    };
+    
+    
     
    
     const handleDeletarAnestesista = (id: number) => {
@@ -94,39 +120,63 @@ const IndexAnestesista = () => {
         
     useFocusEffect(
         React.useCallback(() => {
-            let gruposFetched: any[] = [];
+            const fetchAnestesistas = async () => {
+                try {
+                    const response = await AnestesistaService.obterAnestesistas();
+                    console.log('Anestesistas fetched:', response);
     
-            GrupoDeAnestesiaService.obterTodosGruposDeAnestesia() // Usando o serviço aqui
-                .then(data => {
-                    gruposFetched = data;
-                    setGrupos(data);
-                    return AnestesistaService.obterAnestesistas(); // Continuamos usando o serviço AnestesistaService aqui
-                })
-                .then(response => {
-                    const data = response.data;
-                    if (Array.isArray(data)) {
-                        const anestesistasWithGroupInfo = data.map((anest: any) => {
-                            const grupo = gruposFetched.find(g => g.id === anest.grupodeanestesiaId);
-                            console.log("Anestesista:", anest.nomecompleto, "Grupo:", grupo ? grupo.nome : "Nenhum grupo encontrado");
-                            return {
-                                ...anest,
-                                nomeabreviadoGrupo: grupo ? grupo.nomeabreviado : ' '
-                                
-                            };
-                        });
-                        const sortedAnestesistas = anestesistasWithGroupInfo.sort((a: Anestesista, b: Anestesista) => a.nomecompleto.localeCompare(b.nomecompleto));
-                        setAnestesistas(sortedAnestesistas);
-                        setFilteredData(sortedAnestesistas);
+                    if (response && Array.isArray(response.data)) {
+                        const sortedAnestesistas = response.data.sort((a: Anestesista, b: Anestesista) => a.nomecompleto.localeCompare(b.nomecompleto));
+    
+                        // AQUI: Buscamos os grupos de anestesia e mapeamos os anestesistas para seus grupos
+                        const gruposFetched = await GrupoDeAnestesiaService.obterTodosGruposDeAnestesia();
+                        if (gruposFetched && Array.isArray(gruposFetched.data)) {
+                            setGrupos(gruposFetched.data);
+                            const anestesistasWithGroupInfo = sortedAnestesistas.map((anest: Anestesista) => {
+                                const grupo = gruposFetched.data.find((g: GrupoDeAnestesia) => g.id === anest.grupodeanestesiaId);
+                                return {
+                                    ...anest,
+                                    nomeabreviadoGrupo: grupo ? grupo.nomeabreviado : 'Nenhum'
+                                };
+                            });
+    
+                            setAnestesistas(anestesistasWithGroupInfo);
+                            setFilteredData(anestesistasWithGroupInfo);
+                        } else {
+                            console.error("A chave 'data' da resposta da API de grupos não é um array:", gruposFetched);
+                        }
+    
                     } else {
-                        console.error("A chave 'data' da resposta da API não é um array:", data);
+                        console.error("A chave 'data' da resposta da API não é um array:", response);
                     }
-                })
-                
-                
-                .catch(error => console.error('Erro ao buscar dados:', error));
+                } catch (error) {
+                    console.error('Erro ao buscar anestesistas:', error);
+                }
+            };
+    
+            fetchAnestesistas();
         }, [])
     );
     
+    
+    const mapAnestesistasToGrupos = async (anestesistasData: Anestesista[]) => {
+        const gruposFetched = await GrupoDeAnestesiaService.obterTodosGruposDeAnestesia();
+        if (gruposFetched && Array.isArray(gruposFetched.data)) {
+            setGrupos(gruposFetched.data);
+            const anestesistasWithGroupInfo = anestesistasData.map((anest: Anestesista) => {
+                const grupo = gruposFetched.data.find((g: GrupoDeAnestesia) => g.id === anest.grupodeanestesiaId);
+                return {
+                    ...anest,
+                    nomeabreviadoGrupo: grupo ? grupo.nomeabreviado : 'Nenhum'
+                };
+            });
+    
+            setAnestesistas(anestesistasWithGroupInfo);
+            setFilteredData(anestesistasWithGroupInfo);
+        } else {
+            console.error("A chave 'data' da resposta da API de grupos não é um array:", gruposFetched);
+        }
+    };
     
 
     const handleSearchChange = (text: string) => {
@@ -224,15 +274,10 @@ const IndexAnestesista = () => {
         </ScrollView>
 
         <Paginacao
-                    hasNextPage={hasNextPage}
-                    isFetchingNextPage={isFetchingNextPage}
-                    fetchNextPage={fetchNextPage}
-                    isFetchingPreviousPage={false} // Assuma que ainda não temos a lógica de página anterior
-                    fetchPreviousPage={() => { } } // Assuma que ainda não temos a lógica de página anterior
-                    currentPage={data?.pages.length || 1}
-                    totalPages={data?.pages[data?.pages.length - 1]?.meta.totalPages || 1} onPageChange={function (page: number): void {
-                        throw new Error('Function not implemented.');
-                    } }/>
+            currentPage={currentPageState}
+            totalPages={data?.pages[data?.pages.length - 1]?.meta.totalPages || 1}
+            onPageChange={handlePageChange}
+        />
 
                </QueryClientProvider> 
             </GlobalLayout>
@@ -284,7 +329,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'flex-end',
-        paddingLeft: 1,
+        paddingLeft: 20,
     },
     searchAndFilterContainer: {
         flexDirection: 'row',

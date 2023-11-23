@@ -1,31 +1,24 @@
 import React, { useState } from 'react';
-import { View, TextInput, StyleSheet, ViewStyle, TouchableOpacity } from 'react-native';
+import { View, TextInput, Button, StyleSheet, Text, ViewStyle, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
-interface SearchbarConveniosProps {
+interface SearchbarHospitaisProps {
     onSearch?: (searchText: string) => void;
     onSearchChange?: (text: string) => void;
     onSearchSubmit?: () => void;
     style?: ViewStyle;
-    placeholder?: string;
 }
 
-const SearchbarConvenios: React.FC<SearchbarConveniosProps> = ({ 
-    onSearch, 
-    onSearchChange, 
-    onSearchSubmit, 
-    style, 
-    placeholder = "Pesquisar convênio..." 
-}) => {
+const SearchbarHospitais: React.FC<SearchbarHospitaisProps> = ({ onSearch, onSearchChange, onSearchSubmit, style }) => {
     const [searchText, setSearchText] = useState<string>('');
 
     return (
-        <View style={[styles.container, style]}>
+        <View style={styles.container}>
             <Icon name="search" size={moderateScale(20)} color="#000" style={styles.searchIcon} />
             <TextInput
                 style={styles.input}
-                placeholder={placeholder}
+                placeholder="Pesquisar hospital..."
                 value={searchText}
                 onChangeText={(text) => {
                     setSearchText(text);
@@ -54,7 +47,7 @@ const SearchbarConvenios: React.FC<SearchbarConveniosProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginVertical: verticalScale(0),
+        marginVertical: 0,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -62,7 +55,7 @@ const styles = StyleSheet.create({
         borderColor: 'black',
         borderRadius: moderateScale(10),
         padding: 0,
-        marginBottom: verticalScale(0),
+        marginBottom: 0,
         flex: 1,
         height: verticalScale(40)
     },
@@ -74,9 +67,13 @@ const styles = StyleSheet.create({
         marginRight: moderateScale(100),
         marginLeft: 0
     },
+    buttonText: {
+        color: 'white', 
+        fontWeight: 'bold',
+    },
     iconStyle: {
         marginRight: moderateScale(10),
     },
 });
 
-export default SearchbarConvenios;
+export default SearchbarHospitais;

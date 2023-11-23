@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Text, ViewStyle, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
 interface SearchbarAnestesistasProps {
     onSearch?: (searchText: string) => void;
     onSearchChange?: (text: string) => void;
     onSearchSubmit?: () => void;
-    style?: ViewStyle; // Adicione esta linha
+    style?: ViewStyle;
 }
 
 const SearchbarAnestesistas: React.FC<SearchbarAnestesistasProps> = ({ onSearch, onSearchChange, onSearchSubmit, style }) => {
@@ -14,11 +15,10 @@ const SearchbarAnestesistas: React.FC<SearchbarAnestesistasProps> = ({ onSearch,
 
     return (
         <View style={styles.container}>
-            <Icon name="search" size={20} color="#000" style={styles.searchIcon} />
+            <Icon name="search" size={moderateScale(20)} color="#000" style={styles.searchIcon} />
             <TextInput
                 style={styles.input}
                 placeholder="Pesquisar anestesista..."
-                
                 value={searchText}
                 onChangeText={(text) => {
                     setSearchText(text);
@@ -28,19 +28,19 @@ const SearchbarAnestesistas: React.FC<SearchbarAnestesistasProps> = ({ onSearch,
                 }}
             />
             <Icon
-    name="arrow-right"
-    size={15}
-    color="#000"
-    style={styles.iconStyle}
-    onPress={() => {
-        if (onSearch) {
-            onSearch(searchText);
-        }
-        if (onSearchSubmit) {
-            onSearchSubmit();
-        }
-    }}
-/>
+                name="arrow-right"
+                size={moderateScale(15)}
+                color="#000"
+                style={styles.iconStyle}
+                onPress={() => {
+                    if (onSearch) {
+                        onSearch(searchText);
+                    }
+                    if (onSearchSubmit) {
+                        onSearchSubmit();
+                    }
+                }}
+            />
         </View>
     );
 };
@@ -53,27 +53,26 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         borderWidth: 1,
         borderColor: 'black',
-        borderRadius: 10,
+        borderRadius: moderateScale(10),
         padding: 0,
         marginBottom: 0,
         flex: 1,
-        height: 40
+        height: verticalScale(40)
     },
     searchIcon: {
-        marginLeft: 15,
+        marginLeft: moderateScale(15),
     },
     input: {
         flex: 0.85,
-        marginRight: 100,
+        marginRight: moderateScale(100),
         marginLeft: 0
     },
-    
     buttonText: {
         color: 'white', 
         fontWeight: 'bold',
     },
     iconStyle: {
-        marginRight: 10, // Ajuste esse valor conforme necessário
+        marginRight: moderateScale(10),
     },
 });
 

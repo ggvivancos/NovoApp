@@ -7,10 +7,10 @@ interface Props {
     style?: object;
 }
 
-const CabecalhoProcedimentos: React.FC<Props> = ({ style }) => {
+const CabecalhoSetoresESalas: React.FC<Props> = ({ style }) => {
     return (
         <View style={[styles.header, style]}>
-            <Text style={styles.headerTitle}>Procedimentos</Text>
+            <Text style={styles.headerTitle}>Setores e Salas</Text>
         </View>
     );
 };
@@ -55,4 +55,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CabecalhoProcedimentos;
+export default CabecalhoSetoresESalas;

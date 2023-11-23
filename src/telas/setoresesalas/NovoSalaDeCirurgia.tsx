@@ -3,61 +3,64 @@ import { View, StyleSheet, TextInput, Alert, Text, ScrollView } from 'react-nati
 import { useNavigation, useRoute } from '@react-navigation/native';
 import GlobalLayout from '../../layouts/GlobalLayout';
 import AppButton from '../../componentes/Botões/AppButton';
-import * as EspecialidadeService from '../../services/EspecialidadeService';
+import * as SalaDeCirurgiaService from '../../services/SalaDeCirurgiaService';
 
 type RouteParams = {
-    especialidadeId?: string;
+    salaId?: string;
+    setorId?: string;
 }
 
-const NovoEspecialidade = () => {
+const NovoSalaDeCirurgia = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const params = route.params as RouteParams;
-    const especialidadeId = params?.especialidadeId;
-
+    const salaId = params?.salaId;
+    const { setorId } = route.params as RouteParams;
     const [nome, setNome] = useState('');
     const [nomeAbreviado, setNomeAbreviado] = useState('');
 
     useEffect(() => {
-        if (especialidadeId) {
-            EspecialidadeService.obterEspecialidadePorId(especialidadeId)
-                .then((especialidade: any) => {
-                    setNome(especialidade.nome);
-                    setNomeAbreviado(especialidade.nomeabreviado);
+        console.log("Sala ID recebido:", salaId);
+        if (salaId) {
+            SalaDeCirurgiaService.obterSalaDeCirurgiaPorId(salaId)
+                .then((sala: any) => {
+                    setNome(sala.nome);
+                    setNomeAbreviado(sala.nomeabreviado);
                 })
-                .catch(err => console.error("Erro ao buscar especialidade:", err));
+                .catch(err => console.error("Erro ao buscar sala de cirurgia:", err));
         }
-    }, [especialidadeId]);
+    }, [salaId]);
 
     const salvar = () => {
-        if (!nome || !nomeAbreviado) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+        if (!nome) {
+            Alert.alert('Erro', 'Por favor, preencha o nome.');
             return;
         }
 
-        const especialidadeData = {
+        const salaData = {
             nome: nome,
             nomeabreviado: nomeAbreviado,
+            setorId: setorId
         };
 
-        if (especialidadeId) {
-            EspecialidadeService.atualizarEspecialidade(Number(especialidadeId), especialidadeData)
+        if (salaId) {
+            SalaDeCirurgiaService.atualizarSalaDeCirurgia(Number(salaId), salaData)
                 .then(response => {
-                    Alert.alert('Sucesso', 'Especialidade atualizada com sucesso!');
+                    Alert.alert('Sucesso', 'Sala de cirurgia atualizada com sucesso!');
                     navigation.goBack();
                 })
                 .catch(error => {
-                    console.error('Erro ao atualizar especialidade:', error);
+                    console.error('Erro ao atualizar sala de cirurgia:', error);
                     Alert.alert('Erro', 'Erro ao atualizar. Tente novamente.');
                 });
         } else {
-            EspecialidadeService.criarEspecialidade(especialidadeData)
+            SalaDeCirurgiaService.criarSalaDeCirurgia(salaData)
                 .then(response => {
-                    Alert.alert('Sucesso', 'Especialidade criada com sucesso!');
+                    Alert.alert('Sucesso', 'Sala de cirurgia criada com sucesso!');
                     navigation.goBack();
                 })
                 .catch(error => {
-                    console.error('Erro ao criar especialidade:', error);
+                    console.error('Erro ao criar sala de cirurgia:', error);
                     Alert.alert('Erro', 'Erro ao criar. Tente novamente.');
                 });
         }
@@ -68,7 +71,7 @@ const NovoEspecialidade = () => {
             <ScrollView style={styles.scrollView}>
                 <View style={styles.container}>
                     <Text style={styles.title}>
-                        {especialidadeId ? 'Editar Especialidade' : 'Nova Especialidade'}
+                        {salaId ? 'Editar Sala de Cirurgia' : 'Nova Sala de Cirurgia'}
                     </Text>
 
                     <Text style={styles.label}>Nome</Text>
@@ -83,7 +86,7 @@ const NovoEspecialidade = () => {
                     <TextInput
                         value={nomeAbreviado}
                         onChangeText={setNomeAbreviado}
-                        placeholder="Digite o nome abreviado"
+                        placeholder="Digite o nome abreviado (opcional)"
                         style={styles.input}
                     />
 
@@ -96,6 +99,7 @@ const NovoEspecialidade = () => {
         </GlobalLayout>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -137,6 +141,14 @@ const styles = StyleSheet.create({
         color: '#333',
         textAlign: 'center'
     },
+    hospitalName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#333',
+        textAlign: 'center'
+    },
 });
 
-export default NovoEspecialidade;
+
+export default NovoSalaDeCirurgia;

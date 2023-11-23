@@ -86,44 +86,43 @@ const IndexCirurgioes = () => {
 
     useFocusEffect(
         React.useCallback(() => {
-            Promise.all([
-                EspecialidadeService.obterTodasEspecialidades(),
-                CirurgiaoService.obterCirurgioes()
-            ]).then(([especialidadesResponse, cirurgiaesResponse]) => {
-                const especialidadesFetched = especialidadesResponse.data;
-                console.log("especialidadesFetched:", especialidadesFetched);
-                setEspecialidades(especialidadesFetched);
-                
-                const cirurgiaesData = cirurgiaesResponse.data;
-                console.log("Dados dos cirurgiões:", cirurgiaesData);
-                if (Array.isArray(cirurgiaesData)) {
-                    const cirurgioesWithEspecialidadeInfo = cirurgiaesData.map((cir: any) => {
-                        const especialidade = especialidades.find(e => e.id === cir.especialidade.id);
-
-                        if (!especialidade) {
-                            //console.warn(`Especialidade com ID "${cir.especialidade.id}" não encontrada para o cirurgião com ID: ${cir.id}`);
+            const fetchCirurgioes = async () => {
+                try {
+                    const response = await CirurgiaoService.obterCirurgioes();
+                    console.log('Cirurgiões fetched:', response);
+    
+                    if (response && Array.isArray(response.data)) {
+                        const sortedCirurgioes = response.data.sort((a: Cirurgiao, b: Cirurgiao) => a.nome.localeCompare(b.nome));
+    
+                        // AQUI: Buscamos as especialidades e mapeamos os cirurgiões para suas especialidades
+                        const especialidadesFetched = await EspecialidadeService.obterTodasEspecialidades();
+                        if (especialidadesFetched && Array.isArray(especialidadesFetched.data)) {
+                            setEspecialidades(especialidadesFetched.data);
+                            const cirurgioesWithEspecialidadeInfo = sortedCirurgioes.map((cir: Cirurgiao) => {
+                                const especialidade = especialidadesFetched.data.find((e: Especialidade) => e.id === cir.especialidadeId);
+                                return {
+                                    ...cir,
+                                    nomeabreviadoEspecialidade: especialidade ? especialidade.nomeabreviado : 'N/A'
+                                };
+                            });
+    
+                            setCirurgioes(cirurgioesWithEspecialidadeInfo);
+                            setFilteredData(cirurgioesWithEspecialidadeInfo);
+                        } else {
+                            console.error("A chave 'data' da resposta da API de especialidades não é um array:", especialidadesFetched);
                         }
-                        return {
-                            ...cir,
-                            nomeabreviadoEspecialidade: especialidade ? especialidade.nomeabreviado : 'N/A'
-                        };
-                    });
-                    
-                    
-                    const sortedCirurgioes = cirurgioesWithEspecialidadeInfo.sort((a: Cirurgiao, b: Cirurgiao) => 
-                        a.nome && b.nome ? a.nome.localeCompare(b.nome) : 0
-                    );
-                    setCirurgioes(sortedCirurgioes);
-                    setFilteredData(sortedCirurgioes);
-                } else {
-                    console.error("A chave 'data' da resposta da API não é um array:", cirurgiaesData);
+                    } else {
+                        console.error("A chave 'data' da resposta da API não é um array:", response);
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar cirurgiões:', error);
                 }
-            })
-            .catch(error => {
-                console.error('Erro ao buscar dados:', error);
-            });
+            };
+    
+            fetchCirurgioes();
         }, [])
     );
+    
     
 
     const handleSearchChange = (text: string) => {
@@ -198,17 +197,12 @@ const IndexCirurgioes = () => {
                             <Text>{cir.especialidade?.nomeabreviado ?? "Nenhum"}</Text>
                             </View>
                             <AcoesBotoes
-                                onEditarPress={() => (navigation as any).navigate('EditarCirurgiao', { cirurgiaoId: cir.id })}
+                                onEditarPress={() => (navigation as any).navigate('NovoCirurgiao', { cirurgiaoId: cir.id })}
                                 onDeletarPress={() => handleDeletarCirurgiao(+cir.id)}
                             />
                         </View>
                     ))}
                     <Paginacao
-                        hasNextPage={hasNextPage}
-                        isFetchingNextPage={isFetchingNextPage}
-                        fetchNextPage={fetchNextPage}
-                        isFetchingPreviousPage={false}
-                        fetchPreviousPage={() => { }}
                         currentPage={data?.pages.length || 1}
                         totalPages={data?.pages[data?.pages.length - 1]?.meta.totalPages || 1}
                         onPageChange={(page: number) => { }}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from '../../../styles/themes';  // Importar cores do themes.js
 import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
@@ -7,10 +7,10 @@ interface Props {
     style?: object;
 }
 
-const CabecalhoProcedimentos: React.FC<Props> = ({ style }) => {
+const CabecalhoHospital: React.FC<Props> = ({ style }) => {
     return (
         <View style={[styles.header, style]}>
-            <Text style={styles.headerTitle}>Procedimentos</Text>
+            <Text style={styles.headerTitle}>Hospitais</Text>
         </View>
     );
 };
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         color: colors.text,
         flex: 1,
         textAlign: 'center',
-        marginRight: moderateScale(50),
+        marginRight: moderateScale(0),
     },
     iconContainer: {
         width: moderateScale(40),
@@ -55,4 +55,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default CabecalhoProcedimentos;
+export default CabecalhoHospital;

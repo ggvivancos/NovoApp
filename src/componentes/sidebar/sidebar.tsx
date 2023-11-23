@@ -136,7 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
 
     const handleClose = () => {
         Animated.timing(sidebarAnim, {
-            toValue: 200,
+            toValue: 0,
             duration: 300,
             useNativeDriver: true
         }).start(() => onClose && onClose());
@@ -158,11 +158,30 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
                     handleClose();
                 }} />
                 <SidebarItem title="Cirurgias" onPress={() => { }} />
-                <SidebarItem title="Grupos de Anestesia" onPress={() => { }} />
-                <SidebarItem title="Hospitais" onPress={() => { }} />
-                <SidebarItem title="Salas de Cirurgia" onPress={() => { }} />
-                <SidebarItem title="Setores" onPress={() => { }} />
-                <SidebarItem title="Procedimentos" onPress={() => { }} />
+                <SidebarItem title="Cores" onPress={() => {
+                    navigation.navigate('IndexCor');
+                    handleClose();
+                }} />
+                <SidebarItem title="Convênios" onPress={() => {
+                    navigation.navigate('IndexConvenio');
+                    handleClose();
+                }} />
+                <SidebarItem title="Especialidades" onPress={() => {
+                    navigation.navigate('IndexEspecialidade');
+                    handleClose();
+                }} />
+                <SidebarItem title="Grupos de Anestesia" onPress={() => {
+                    navigation.navigate('IndexGrupoDeAnestesia');
+                    handleClose();
+                }} />
+                <SidebarItem title="Hospitais" onPress={() => {
+                    navigation.navigate('IndexHospital');
+                    handleClose();
+                }} />
+                <SidebarItem title="Procedimentos" onPress={() => {
+                    navigation.navigate('IndexProcedimento');
+                    handleClose();
+                }} />
             </SubMenu>
 
             <SidebarItem title="ESTATÍSTICAS" onPress={() => { }} />

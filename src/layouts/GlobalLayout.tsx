@@ -34,7 +34,7 @@ const GlobalLayout: React.FC<GlobalLayoutProps> = ({ headerComponent, children, 
                                 setSidebarVisible(false);
                             }}
                         >
-                            <Icon name="arrow-left" size={moderateScale(24)} color={colors.text} />
+                            <Icon name="arrow-left" size={moderateScale(22)} color={colors.text} />
                         </TouchableOpacity>
                     )
                 }

@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         color: colors.text,
         flex: 1,
         textAlign: 'center',
-        marginRight: moderateScale(50),
+        marginRight: moderateScale(0),
     },
     iconContainer: {
         width: moderateScale(40),

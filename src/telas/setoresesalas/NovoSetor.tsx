@@ -3,61 +3,88 @@ import { View, StyleSheet, TextInput, Alert, Text, ScrollView } from 'react-nati
 import { useNavigation, useRoute } from '@react-navigation/native';
 import GlobalLayout from '../../layouts/GlobalLayout';
 import AppButton from '../../componentes/Botões/AppButton';
-import * as EspecialidadeService from '../../services/EspecialidadeService';
+import * as SetorService from '../../services/SetorService';
+import * as HospitalService from '../../services/HospitalService';
+
 
 type RouteParams = {
-    especialidadeId?: string;
+    setorId?: string;
+    hospitalId?: string;
 }
 
-const NovoEspecialidade = () => {
+const NovoSetor = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const params = route.params as RouteParams;
-    const especialidadeId = params?.especialidadeId;
-
+    const setorId = params?.setorId;
+    const { hospitalId } = route.params as RouteParams;
     const [nome, setNome] = useState('');
     const [nomeAbreviado, setNomeAbreviado] = useState('');
+    const [nomeDoHospital, setNomeDoHospital] = useState<string | null>(null);
+
 
     useEffect(() => {
-        if (especialidadeId) {
-            EspecialidadeService.obterEspecialidadePorId(especialidadeId)
-                .then((especialidade: any) => {
-                    setNome(especialidade.nome);
-                    setNomeAbreviado(especialidade.nomeabreviado);
+        const fetchNomeDoHospital = async () => {
+            if (hospitalId) {  // Verifique se hospitalId é definido antes de fazer a chamada
+                try {
+                    const hospital = await HospitalService.obterHospitalPorId(hospitalId);
+                    if (hospital && hospital.nomeHospital) {
+                        setNomeDoHospital(hospital.nomeHospital);
+                    } else {
+                        console.error("Nome do hospital não encontrado ou inválido:", hospital);
+                    }
+                } catch (error) {
+                    console.error("Erro ao buscar nome do hospital:", error);
+                }
+            }
+        };
+    
+        fetchNomeDoHospital();
+    }, [hospitalId]);
+    
+    
+
+    useEffect(() => {
+        if (setorId) {
+            SetorService.obterSetorPorId(setorId)
+                .then((setor: any) => {
+                    setNome(setor.nome);
+                    setNomeAbreviado(setor.nomeabreviado);
                 })
-                .catch(err => console.error("Erro ao buscar especialidade:", err));
+                .catch(err => console.error("Erro ao buscar setor:", err));
         }
-    }, [especialidadeId]);
+    }, [setorId]);
 
     const salvar = () => {
-        if (!nome || !nomeAbreviado) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+        if (!nome) {
+            Alert.alert('Erro', 'Por favor, preencha o nome.');
             return;
         }
 
-        const especialidadeData = {
+        const setorData = {
             nome: nome,
             nomeabreviado: nomeAbreviado,
+            hospitalId: hospitalId  // Adicione esta linha
         };
 
-        if (especialidadeId) {
-            EspecialidadeService.atualizarEspecialidade(Number(especialidadeId), especialidadeData)
+        if (setorId) {
+            SetorService.atualizarSetor(Number(setorId), setorData)
                 .then(response => {
-                    Alert.alert('Sucesso', 'Especialidade atualizada com sucesso!');
+                    Alert.alert('Sucesso', 'Setor atualizado com sucesso!');
                     navigation.goBack();
                 })
                 .catch(error => {
-                    console.error('Erro ao atualizar especialidade:', error);
+                    console.error('Erro ao atualizar setor:', error);
                     Alert.alert('Erro', 'Erro ao atualizar. Tente novamente.');
                 });
         } else {
-            EspecialidadeService.criarEspecialidade(especialidadeData)
+            SetorService.criarSetor(setorData)
                 .then(response => {
-                    Alert.alert('Sucesso', 'Especialidade criada com sucesso!');
+                    Alert.alert('Sucesso', 'Setor criado com sucesso!');
                     navigation.goBack();
                 })
                 .catch(error => {
-                    console.error('Erro ao criar especialidade:', error);
+                    console.error('Erro ao criar setor:', error);
                     Alert.alert('Erro', 'Erro ao criar. Tente novamente.');
                 });
         }
@@ -67,9 +94,14 @@ const NovoEspecialidade = () => {
         <GlobalLayout showBackButton={true}>
             <ScrollView style={styles.scrollView}>
                 <View style={styles.container}>
-                    <Text style={styles.title}>
-                        {especialidadeId ? 'Editar Especialidade' : 'Nova Especialidade'}
+                <Text style={styles.title}>
+                    {setorId ? 'Editar Setor' : 'Novo Setor'}
+                </Text>
+                {nomeDoHospital && (
+                    <Text style={styles.hospitalName}>
+                        Hospital: {nomeDoHospital}
                     </Text>
+                )}
 
                     <Text style={styles.label}>Nome</Text>
                     <TextInput
@@ -83,7 +115,7 @@ const NovoEspecialidade = () => {
                     <TextInput
                         value={nomeAbreviado}
                         onChangeText={setNomeAbreviado}
-                        placeholder="Digite o nome abreviado"
+                        placeholder="Digite o nome abreviado (opcional)"
                         style={styles.input}
                     />
 
@@ -137,6 +169,14 @@ const styles = StyleSheet.create({
         color: '#333',
         textAlign: 'center'
     },
+    hospitalName: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        color: '#333',
+        textAlign: 'center'
+    },
+    
 });
 
-export default NovoEspecialidade;
+export default NovoSetor;

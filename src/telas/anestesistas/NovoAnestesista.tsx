@@ -58,11 +58,19 @@ const NovoAnestesista = () => {
     useEffect(() => {
         GrupoDeAnestesiaService.obterTodosGruposDeAnestesia()
             .then(data => {
-                const sortedData: GrupoDeAnestesia[] = data.sort((a: GrupoDeAnestesia, b: GrupoDeAnestesia) => a.nome.localeCompare(b.nome));
-                setGrupos(sortedData);
+                console.log('Data fetched:', data); // Log para verificar os dados retornados
+                const gruposData = data.data; // Ajustando para pegar a propriedade correta
+                
+                if (Array.isArray(gruposData)) { // Verificando se é um array antes de chamar sort
+                    const sortedData: GrupoDeAnestesia[] = gruposData.sort((a: GrupoDeAnestesia, b: GrupoDeAnestesia) => a.nome.localeCompare(b.nome));
+                    setGrupos(sortedData);
+                } else {
+                    console.error('Erro ao buscar grupos: data.data não é um array:', gruposData); // Log de erro com mais informações
+                }
             })
             .catch(error => console.error('Erro ao buscar grupos:', error));
     }, []);
+    
 
     const salvar = () => {
         if (!nomeCompleto || !nomeAbreviado || !iniciais) {
