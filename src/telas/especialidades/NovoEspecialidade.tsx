@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import GlobalLayout from '../../layouts/GlobalLayout';
 import AppButton from '../../componentes/Botões/AppButton';
 import * as EspecialidadeService from '../../services/EspecialidadeService';
+import PaletaDeCores from '../../componentes/utilities/PaletaDeCores'; // Importe o componente PaletaDeCores
 
 type RouteParams = {
     especialidadeId?: string;
@@ -17,6 +18,7 @@ const NovoEspecialidade = () => {
 
     const [nome, setNome] = useState('');
     const [nomeAbreviado, setNomeAbreviado] = useState('');
+    const [cor, setCor] = useState(''); // Adicionando estado para a cor
 
     useEffect(() => {
         if (especialidadeId) {
@@ -24,13 +26,14 @@ const NovoEspecialidade = () => {
                 .then((especialidade: any) => {
                     setNome(especialidade.nome);
                     setNomeAbreviado(especialidade.nomeabreviado);
+                    setCor(especialidade.cor); // Definindo a cor da especialidade
                 })
                 .catch(err => console.error("Erro ao buscar especialidade:", err));
         }
     }, [especialidadeId]);
 
     const salvar = () => {
-        if (!nome || !nomeAbreviado) {
+        if (!nome || !nomeAbreviado || !cor) { // Verificando se a cor foi definida
             Alert.alert('Erro', 'Por favor, preencha todos os campos.');
             return;
         }
@@ -38,8 +41,10 @@ const NovoEspecialidade = () => {
         const especialidadeData = {
             nome: nome,
             nomeabreviado: nomeAbreviado,
+            cor: cor // Incluindo a cor no objeto de dados
         };
 
+        // ...continuação do método salvar
         if (especialidadeId) {
             EspecialidadeService.atualizarEspecialidade(Number(especialidadeId), especialidadeData)
                 .then(response => {
@@ -84,6 +89,16 @@ const NovoEspecialidade = () => {
                         value={nomeAbreviado}
                         onChangeText={setNomeAbreviado}
                         placeholder="Digite o nome abreviado"
+                        style={styles.input}
+                    />
+
+                    <Text style={styles.label}>Escolha uma cor da paleta:</Text>
+                    <PaletaDeCores onColorSelect={setCor} />
+
+                    <TextInput
+                        value={cor}
+                        onChangeText={setCor}
+                        placeholder="Digite a cor (formato hexadecimal)"
                         style={styles.input}
                     />
 
@@ -140,3 +155,4 @@ const styles = StyleSheet.create({
 });
 
 export default NovoEspecialidade;
+

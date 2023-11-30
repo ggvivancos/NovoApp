@@ -10,11 +10,11 @@ export const obterGrupoDeAnestesiaPorId = (id: number) => {
     return crudService.ler(`${URL_GRUPO_ANESTESIA}/${id}`);
 };
 
-export const criarGrupoDeAnestesia = (data: { nome: string, nomeabreviado: string }) => {
+export const criarGrupoDeAnestesia = (data: { nome: string, nomeabreviado: string, cor?: string }) => {
     return crudService.criar(URL_GRUPO_ANESTESIA, data);
 };
 
-export const atualizarGrupoDeAnestesia = (id: number, data: { nome?: string, nomeabreviado?: string }) => {
+export const atualizarGrupoDeAnestesia = (id: number, data: { nome?: string, nomeabreviado?: string, cor?: string }) => {
     return crudService.atualizar(`${URL_GRUPO_ANESTESIA}/${id}`, data);
 };
 

@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, Alert } from 'react-native';
 import GlobalLayout from '../../layouts/GlobalLayout';
 import SearchbarEspecialidades from './componentes/SearchbarEspecialidades';
-import { useNavigation } from '@react-navigation/native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import AcoesBotoes from '../../componentes/Botões/AcoesBotoes';
 import * as EspecialidadeService from '../../services/EspecialidadeService';
 import { QueryClient, QueryClientProvider, useInfiniteQuery } from 'react-query';
 import Paginacao from '../../componentes/paginacao/Paginacao';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CabecalhoEspecialidades from './componentes/CabecalhoEspecialidades';
+import { scale, moderateScale } from 'react-native-size-matters';
 
 type Especialidade = {
     id: number;
     nome: string;
     nomeabreviado: string;
+    cor: string; // Adicionando a propriedade cor
     createdAt: string;
     updatedAt: string;
 };
@@ -43,6 +44,7 @@ const IndexEspecialidade = () => {
         }
     );
 
+    // Função para lidar com a exclusão de uma especialidade
     const handleDeletarEspecialidade = (id: number) => {
         Alert.alert(
             "Confirmação",
@@ -54,6 +56,7 @@ const IndexEspecialidade = () => {
         );
     };
 
+    // Função para confirmar a exclusão de uma especialidade
     const deletarEspecialidadeConfirmado = async (id: number) => {
         try {
             const response = await EspecialidadeService.deletarEspecialidade(id);
@@ -71,21 +74,24 @@ const IndexEspecialidade = () => {
         }
     };
 
+    // Efeito para buscar e ordenar os dados ao focar no componente
     useFocusEffect(
         React.useCallback(() => {
             EspecialidadeService.obterTodasEspecialidades()
             .then(especialidadesResponse => {
                 const especialidadesFetched = especialidadesResponse.data;
-                console.log("especialidadesFetched:", especialidadesFetched);
-                setEspecialidades(especialidadesFetched);
-                setFilteredData(especialidadesFetched);
+                // Ordenando os dados em ordem alfabética pelo nome
+                const dadosOrdenados = especialidadesFetched.sort((a: Especialidade, b: Especialidade) => a.nome.localeCompare(b.nome));
+                setEspecialidades(dadosOrdenados);
+                setFilteredData(dadosOrdenados);
             })
             .catch(error => {
                 console.error('Erro ao buscar dados:', error);
             });
         }, [])
     );
-    
+
+    // Função para lidar com mudanças na barra de pesquisa
     const handleSearchChange = (text: string) => {
         const newData = especialidades.filter(item => {
             const itemData = item.nome.toUpperCase();
@@ -96,7 +102,7 @@ const IndexEspecialidade = () => {
     };
 
     return (
-        <GlobalLayout showBackButton={true} headerComponent={<CabecalhoEspecialidades style={styles.cabecalhoPadding} />}>
+        <GlobalLayout showBackButton={true} headerComponent={<CabecalhoEspecialidades />}>
             <QueryClientProvider client={queryClient}>
                 <ScrollView style={styles.container}>
                     <View style={styles.searchAndIconContainer}>
@@ -106,7 +112,7 @@ const IndexEspecialidade = () => {
                         />
                         <Icon 
                             name="plus" 
-                            size={24} 
+                            size={scale(24)} 
                             color="#000"
                             style={styles.iconStyle}
                             onPress={() => (navigation as any).navigate('NovoEspecialidade')}
@@ -118,13 +124,15 @@ const IndexEspecialidade = () => {
                     <View style={styles.tableHeader}>
                         <View style={styles.headerNomeCompleto}><Text style={styles.headerText}>Especialidade</Text></View>
                         <View style={styles.headerNomeAbreviado}><Text style={styles.headerText}>Abreviação</Text></View>
+                        <View style={styles.headerCor}><Text style={styles.headerText}>Cor</Text></View>
                         <View style={styles.headerAcoes}><Text style={styles.headerText}>Ações</Text></View>
-                     </View>
+                    </View>
 
                     {filteredData.map(esp => (
                         <View key={esp.id} style={styles.row}>
                             <View style={styles.cellNomeCompleto}><Text>{esp.nome}</Text></View>
                             <View style={styles.cellNomeAbreviado}><Text>{esp.nomeabreviado}</Text></View>
+                            <View style={[styles.cellCor, { backgroundColor: esp.cor }]}></View>
                             <AcoesBotoes
                                 onEditarPress={() => (navigation as any).navigate('NovoEspecialidade', { especialidadeId: esp.id })}
                                 onDeletarPress={() => handleDeletarEspecialidade(esp.id)}
@@ -146,65 +154,47 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    cabecalhoPadding: {
-        paddingLeft: 50,
-    },
     searchAndIconContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 10,
-    },
-    iconsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        flex: 1,
+        padding: moderateScale(10),
     },
     iconStyle: {
-        marginLeft: 20,
+        marginLeft: moderateScale(15),
     },
     headerText: {
-        fontSize: 14,
+        fontSize: moderateScale(14),
         fontWeight: 'bold',
         color: '#000',
-        padding: 10,
-    },
-    table: {
-        flex: 1,
-        padding: 20,
+        padding: moderateScale(10),
     },
     tableHeader: {
         flexDirection: 'row',
-        borderBottomWidth: 0,
+        borderBottomWidth: 1,
         borderBottomColor: '#ddd',
-        paddingVertical: 10,
+        paddingVertical: moderateScale(10),
         backgroundColor: '#f7f7f7',
-        paddingLeft: 10,
+        paddingLeft: moderateScale(10),
     },
     row: {
         flexDirection: 'row',
-        borderBottomWidth: 0.0,
+        borderBottomWidth: 1,
         borderBottomColor: '#ddd',
-        paddingVertical: 10,
-        paddingLeft: 20,
+        paddingVertical: moderateScale(10),
+        paddingLeft: moderateScale(10),
     },
     headerNomeCompleto: {
         flex: 3,
         justifyContent: 'flex-start',
         alignItems: 'flex-start',
-        paddingLeft: 10,
+        paddingLeft: moderateScale(10),
     },
     headerNomeAbreviado: {
         flex: 2,
         justifyContent: 'flex-end',
         alignItems: 'flex-start',
-        paddingLeft: -20,
-    },
-    headerAcoes: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-        paddingLeft: 0,
+        paddingLeft: -moderateScale(20),
     },
     cellNomeCompleto: {
         flex: 3,
@@ -218,13 +208,30 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         paddingLeft: 0,
     },
-    cellAcoes: {
+    headerCor: {
+        flex: 0.5,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        paddingRight: 0,
+    },
+    cellCor: {
+        flex: 0.5,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        height: 20,
+        width: 10,
+        borderRadius: 10,
+        marginRight: 10,
+        paddingRight: 40,
+    },
+    headerAcoes: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-end',
+        paddingRight: moderateScale(10),
     },
 });
 
 
-
 export default IndexEspecialidade;
+

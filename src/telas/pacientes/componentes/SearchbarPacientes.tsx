@@ -3,7 +3,7 @@ import { View, TextInput, StyleSheet, ViewStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
-interface SearchbarAgendamentosProps {
+interface SearchbarPacientesProps {
     onSearch?: (searchText: string) => void;
     onSearchChange?: (text: string) => void;
     onSearchSubmit?: () => void;
@@ -11,12 +11,12 @@ interface SearchbarAgendamentosProps {
     placeholder?: string;
 }
 
-const SearchbarAgendamentos: React.FC<SearchbarAgendamentosProps> = ({ 
+const SearchbarPacientes: React.FC<SearchbarPacientesProps> = ({ 
     onSearch, 
     onSearchChange, 
     onSearchSubmit, 
     style, 
-    placeholder = "Pesquisar agendamento..." 
+    placeholder = "Pesquisar paciente..." 
 }) => {
     const [searchText, setSearchText] = useState<string>('');
 
@@ -79,4 +79,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SearchbarAgendamentos;
+export default SearchbarPacientes;

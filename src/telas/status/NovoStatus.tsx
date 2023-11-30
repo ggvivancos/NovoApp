@@ -1,89 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TextInput, Alert, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TextInput, Alert, Text, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import GlobalLayout from '../../layouts/GlobalLayout';
 import AppButton from '../../componentes/Botões/AppButton';
-import * as GrupoDeAnestesiaService from '../../services/GrupoDeAnestesiaService';
-import PaletaDeCores from '../../componentes/utilities/PaletaDeCores'; // Importe o componente PaletaDeCores
+import * as StatusService from '../../services/StatusService'; // Importe o StatusService
+import PaletaDeCores from '../../componentes/utilities/PaletaDeCores';
 
 type RouteParams = {
-    grupoId?: string;
+    statusId?: string;
 }
 
-const NovoGrupoDeAnestesia = () => {
+const NovoStatus = () => {
     const navigation = useNavigation();
     const route = useRoute();
     const params = route.params as RouteParams;
-    const grupoId = params?.grupoId;
+    const statusId = params?.statusId;
 
     const [nome, setNome] = useState('');
-    const [nomeAbreviado, setNomeAbreviado] = useState('');
-    const [cor, setCor] = useState(''); // Adicionando estado para a cor
+    const [nomeabreviado, setNomeAbreviado] = useState(''); // Adicionado campo para nome abreviado
+    const [cor, setCor] = useState('');
 
     useEffect(() => {
-        if (grupoId) {
-            GrupoDeAnestesiaService.obterGrupoDeAnestesiaPorId(Number(grupoId)).then((grupo: any) => {
-                setNome(grupo.nome);
-                setNomeAbreviado(grupo.nomeabreviado);
-                setCor(grupo.cor); // Definindo a cor do grupo
-            }).catch((err: any) => {
-                console.error("Erro ao buscar grupo:", err);
-            });
+        if (statusId) {
+            StatusService.obterStatusPorId(statusId) // Use o serviço StatusService
+                .then((status: any) => {
+                    setNome(status.nome);
+                    setNomeAbreviado(status.nomeabreviado); // Adicionado campo para nome abreviado
+                    setCor(status.cor);
+                })
+                .catch(err => console.error("Erro ao buscar status:", err));
         }
-    }, [grupoId]);
+    }, [statusId]);
 
     const salvar = () => {
-        if (!nome || !nomeAbreviado || !cor) { // Verificando se a cor foi definida
+        if (!nome || !nomeabreviado || !cor) { // Verificação atualizada para incluir nomeAbreviado
             Alert.alert('Erro', 'Por favor, preencha todos os campos.');
             return;
         }
-    
-        const grupoData = {
+
+        const statusData = {
             nome: nome,
-            nomeabreviado: nomeAbreviado,
-            cor: cor // Incluindo a cor no objeto de dados
+            nomeabreviado: nomeabreviado, // Adicionado campo para nome abreviado
+            cor: cor,
         };
-    
-        if (grupoId) {
-            GrupoDeAnestesiaService.atualizarGrupoDeAnestesia(Number(grupoId), grupoData)
-                .then(data => {
-                    if (data && data.success) {
-                        Alert.alert('Sucesso', data.success);  
-                        navigation.goBack();
-                    } else {
-                        Alert.alert('Erro', 'Erro ao atualizar. Tente novamente.');
-                    }
+
+        if (statusId) {
+            StatusService.atualizarStatus(Number(statusId), statusData) // Use o serviço StatusService
+                .then(response => {
+                    Alert.alert('Sucesso', 'Status atualizado com sucesso!');
+                    navigation.goBack();
                 })
                 .catch(error => {
-                    console.error('Erro ao atualizar grupo:', error);
+                    console.error('Erro ao atualizar status:', error);
                     Alert.alert('Erro', 'Erro ao atualizar. Tente novamente.');
                 });
         } else {
-            GrupoDeAnestesiaService.criarGrupoDeAnestesia(grupoData)
-                .then(data => {
-                    if (data && data.id) {
-                        Alert.alert('Sucesso', 'Grupo salvo com sucesso!');
-                        navigation.goBack();
-                    } else if (data && data.error) {
-                        Alert.alert('Erro', data.error);
-                    } else {
-                        Alert.alert('Erro', 'Erro ao salvar. Tente novamente.');
-                    }
+            StatusService.criarStatus(statusData) // Use o serviço StatusService
+                .then(response => {
+                    Alert.alert('Sucesso', 'Status criado com sucesso!');
+                    navigation.goBack();
                 })
                 .catch(error => {
-                    console.error('Erro ao salvar grupo:', error);
-                    Alert.alert('Erro', 'Erro ao salvar. Tente novamente.');
+                    console.error('Erro ao criar status:', error);
+                    Alert.alert('Erro', 'Erro ao criar. Tente novamente.');
                 });
         }
     };
 
     return (
         <GlobalLayout showBackButton={true}>
-            <ScrollView style={styles.scrollView} nestedScrollEnabled={true}>
+            <ScrollView style={styles.scrollView}>
                 <View style={styles.container}>
-
                     <Text style={styles.title}>
-                        {grupoId ? 'Editar Grupo de Anestesia' : 'Novo Grupo de Anestesia'}
+                        {statusId ? 'Editar Status' : 'Novo Status'}
                     </Text>
 
                     <Text style={styles.label}>Nome</Text>
@@ -96,7 +85,7 @@ const NovoGrupoDeAnestesia = () => {
 
                     <Text style={styles.label}>Nome Abreviado</Text>
                     <TextInput
-                        value={nomeAbreviado}
+                        value={nomeabreviado}
                         onChangeText={setNomeAbreviado}
                         placeholder="Digite o nome abreviado"
                         style={styles.input}
@@ -121,8 +110,6 @@ const NovoGrupoDeAnestesia = () => {
         </GlobalLayout>
     );
 };
-
-
 
 const styles = StyleSheet.create({
     container: {
@@ -150,8 +137,8 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'center',  
-        alignItems: 'center',      
+        justifyContent: 'center',
+        alignItems: 'center',
         marginTop: 10,
     },
     scrollView: {
@@ -166,4 +153,5 @@ const styles = StyleSheet.create({
     },
 });
 
-export default NovoGrupoDeAnestesia;
+
+export default NovoStatus;

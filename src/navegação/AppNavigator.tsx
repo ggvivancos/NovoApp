@@ -12,10 +12,7 @@ import NovoHospital from '../telas/hospitais/NovoHospital';
 import IndexHospital from '../telas/hospitais/IndexHospital';
 import NovoConvenio from '../telas/convenios/NovoConvenio';
 import IndexConvenio from '../telas/convenios/IndexConvenio';
-//import NovoSalaDeCirurgia from '../telas/salasdecirurgia/NovoSalaDeCirurgia';
-//import IndexSalaDeCirurgia from '../telas/salasdecirurgia/IndexSalaDeCirurgia';
 import NovoSetor from '../telas/setoresesalas/NovoSetor';
-//import IndexSetor from '../telas/setores/IndexSetor';
 import NovoProcedimento from '../telas/procedimentos/NovoProcedimento';
 import IndexProcedimento from '../telas/procedimentos/IndexProcedimento';
 import NovoEspecialidade from '../telas/especialidades/NovoEspecialidade';
@@ -23,11 +20,16 @@ import IndexEspecialidade from '../telas/especialidades/IndexEspecialidade';
 import NovoGrupoDeAnestesia from '../telas/gruposdeanestesia/NovoGrupoDeAnestesia';
 import IndexGrupoDeAnestesia from '../telas/gruposdeanestesia/IndexGrupoDeAnestesia';
 //import NovoAgendamento from '../telas/agendamentos/NovoAgendamento';
-//import IndexAgendamento from '../telas/agendamentos/IndexAgendamento';
+import IndexAgendamento from '../telas/agendamentos/IndexAgendamento';
 import NovoCor from '../telas/cores/NovoCor';
 import IndexCor from '../telas/cores/IndexCor';
 import IndexSetorESala from '../telas/setoresesalas/IndexSetorESala';
 import NovoSalaDeCirurgia from '../telas/setoresesalas/NovoSalaDeCirurgia';
+import IndexPaciente from '../telas/pacientes/IndexPaciente';
+import NovoPaciente from '../telas/pacientes/NovoPaciente';
+import IndexStatus from '../telas/status/IndexStatus';
+import NovoStatus from '../telas/status/NovoStatus';
+
 
 const Stack = createStackNavigator();
 
@@ -136,6 +138,32 @@ function AppNavigator() {
             component={NovoProcedimento}
             options={{ headerShown: false }} 
         />
+        <Stack.Screen 
+            name="IndexPaciente" 
+            component={IndexPaciente}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="NovoPaciente" 
+            component={NovoPaciente}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="IndexAgendamento" 
+            component={IndexAgendamento}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="IndexStatus" 
+            component={IndexStatus}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="NovoStatus" 
+            component={NovoStatus}
+            options={{ headerShown: false }} 
+        />
+
 
         
       </Stack.Navigator>

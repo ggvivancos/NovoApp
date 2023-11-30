@@ -7,10 +7,10 @@ interface Props {
     style?: object;
 }
 
-const CabecalhoAgendamentos: React.FC<Props> = ({ style }) => {
+const CabecalhoPacientes: React.FC<Props> = ({ style }) => {
     return (
         <View style={[styles.header, style]}>
-            <Text style={styles.headerTitle}>Agendamentos</Text>
+            <Text style={styles.headerTitle}>Pacientes</Text>
         </View>
     );
 };
@@ -19,25 +19,20 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        padding: moderateScale(10),
+        padding: 0,
         borderRadius: moderateScale(10),
-        backgroundColor: colors.primary,  // Ajuste a cor se necessário
-        width: '100%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-        elevation: 5,
+        backgroundColor: colors.primary,  // Pode ajustar a cor se necessário
+        width: '100%'
     },
     headerTitle: {
-        fontSize: moderateScale(20),
+        fontSize: moderateScale(16),
         fontWeight: 'bold',
-        color: colors.text,  // Ajuste a cor do texto se necessário
+        color: colors.text,  // Pode ajustar a cor do texto se necessário
         flex: 1,
         textAlign: 'center',
         marginRight: moderateScale(50),
     },
-    // Adicione outros estilos, se necessário
+    // Outros estilos, se necessário
 });
 
-export default CabecalhoAgendamentos;
+export default CabecalhoPacientes;

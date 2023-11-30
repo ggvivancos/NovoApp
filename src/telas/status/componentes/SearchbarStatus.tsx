@@ -1,23 +1,16 @@
 import React, { useState } from 'react';
 import { View, TextInput, StyleSheet, ViewStyle } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
+import { moderateScale, verticalScale } from 'react-native-size-matters';
 
-interface SearchbarAgendamentosProps {
+interface SearchbarStatusProps {
     onSearch?: (searchText: string) => void;
     onSearchChange?: (text: string) => void;
     onSearchSubmit?: () => void;
     style?: ViewStyle;
-    placeholder?: string;
 }
 
-const SearchbarAgendamentos: React.FC<SearchbarAgendamentosProps> = ({ 
-    onSearch, 
-    onSearchChange, 
-    onSearchSubmit, 
-    style, 
-    placeholder = "Pesquisar agendamento..." 
-}) => {
+const SearchbarStatus: React.FC<SearchbarStatusProps> = ({ onSearch, onSearchChange, onSearchSubmit, style }) => {
     const [searchText, setSearchText] = useState<string>('');
 
     return (
@@ -25,12 +18,20 @@ const SearchbarAgendamentos: React.FC<SearchbarAgendamentosProps> = ({
             <Icon name="search" size={moderateScale(20)} color="#000" style={styles.searchIcon} />
             <TextInput
                 style={styles.input}
-                placeholder={placeholder}
+                placeholder="Pesquisar status..."
                 value={searchText}
                 onChangeText={(text) => {
                     setSearchText(text);
                     if(onSearchChange) {
                         onSearchChange(text);
+                    }
+                }}
+                onSubmitEditing={() => {
+                    if (onSearch) {
+                        onSearch(searchText);
+                    }
+                    if (onSearchSubmit) {
+                        onSearchSubmit();
                     }
                 }}
             />
@@ -54,7 +55,7 @@ const SearchbarAgendamentos: React.FC<SearchbarAgendamentosProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        marginVertical: verticalScale(0),
+        marginVertical: 0,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
         borderColor: 'black',
         borderRadius: moderateScale(10),
         padding: 0,
-        marginBottom: verticalScale(0),
+        marginBottom: 0,
         flex: 1,
         height: verticalScale(40)
     },
@@ -79,4 +80,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SearchbarAgendamentos;
+export default SearchbarStatus;

@@ -12,16 +12,17 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import CabecalhoGruposDeAnestesia from './componentes/CabecalhoGruposDeAnestesia';
 import { scale, moderateScale, verticalScale } from 'react-native-size-matters';
 
-
 type GrupoDeAnestesia = {
     id: number;
     nome: string;
     nomeabreviado: string;
+    cor: string; // Adicionando a propriedade cor
     createdAt: string;
     updatedAt: string;
 };
 
 const queryClient = new QueryClient();
+
 
 const IndexGrupoDeAnestesia = () => {
     const [grupos, setGrupos] = useState<GrupoDeAnestesia[]>([]);
@@ -48,13 +49,12 @@ const IndexGrupoDeAnestesia = () => {
             }
         }
     );
-    
+
     const allData = React.useMemo(() => {
         if (!data) return [];
         return data.pages.flatMap(page => page.data);
     }, [data]);
-    
-      
+
     const handleDeletarGrupo = (id: number) => {
         Alert.alert(
             "Confirmação",
@@ -90,8 +90,10 @@ const IndexGrupoDeAnestesia = () => {
                 if (response.error) {
                     console.error("API Error Response:", response.error);
                 } else {
-                    setGrupos(response.data);  // Acesso a propriedade 'data' aqui
-                    setFilteredData(response.data);  // E aqui
+                    // Ordenando os dados em ordem alfabética pelo nome
+                    const dadosOrdenados = response.data.sort((a: GrupoDeAnestesia, b: GrupoDeAnestesia) => a.nome.localeCompare(b.nome));
+                    setGrupos(dadosOrdenados);
+                    setFilteredData(dadosOrdenados);
                 }
             })
             .catch(error => {
@@ -99,9 +101,32 @@ const IndexGrupoDeAnestesia = () => {
             });
         }, [])
     );
-
-    console.log("Data after API call: ", data);
     
+
+    useFocusEffect(
+        React.useCallback(() => {
+            GrupoDeAnestesiaService.obterTodosGruposDeAnestesia()
+            .then(response => {
+                if (response.error) {
+                    console.error("API Error Response:", response.error);
+                } else {
+                    // Ordenando os dados em ordem alfabética pelo nome
+                    const dadosOrdenados = response.data.sort((a: GrupoDeAnestesia, b: GrupoDeAnestesia) => a.nome.localeCompare(b.nome));
+                    setGrupos(dadosOrdenados);
+                    setFilteredData(dadosOrdenados);
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao buscar dados:', error);
+            });
+        }, [])
+    );
+    
+    
+
+    
+    
+
     const handleSearchChange = (text: string) => {
         const newData = grupos.filter(item => {
             const itemData = item.nome.toUpperCase();
@@ -134,13 +159,15 @@ const IndexGrupoDeAnestesia = () => {
                     <View style={styles.tableHeader}>
                         <View style={styles.headerNomeCompleto}><Text style={styles.headerText}>Grupo</Text></View>
                         <View style={styles.headerNomeAbreviado}><Text style={styles.headerText}>Abreviação</Text></View>
+                        <View style={styles.headerCor}><Text style={styles.headerText}>Cor</Text></View>
                         <View style={styles.headerAcoes}><Text style={styles.headerText}>Ações</Text></View>
-                     </View>
+                    </View>
 
-                     {Array.isArray(filteredData) && filteredData.map(grupo => (
+                    {Array.isArray(filteredData) && filteredData.map(grupo => (
                         <View key={grupo.id} style={styles.row}>
                             <View style={styles.cellNomeCompleto}><Text>{grupo.nome}</Text></View>
                             <View style={styles.cellNomeAbreviado}><Text>{grupo.nomeabreviado}</Text></View>
+                            <View style={[styles.cellCor, { backgroundColor: grupo.cor }]}></View>
                             <AcoesBotoes
                                 onEditarPress={() => (navigation as any).navigate('NovoGrupoDeAnestesia', { grupoId: grupo.id })}
                                 onDeletarPress={() => handleDeletarGrupo(grupo.id)}
@@ -159,13 +186,9 @@ const IndexGrupoDeAnestesia = () => {
     );
 };
 
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    cabecalhoPadding: {
-        paddingLeft: moderateScale(50),
     },
     searchAndIconContainer: {
         flexDirection: 'row',
@@ -173,7 +196,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         padding: moderateScale(10),
     },
-    
     iconStyle: {
         marginLeft: moderateScale(15),
     },
@@ -197,30 +219,6 @@ const styles = StyleSheet.create({
         borderBottomColor: '#ddd',
         paddingVertical: moderateScale(10),
         paddingLeft: moderateScale(10),
-    },
-    headerNome: {
-        flex: 4,
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-        paddingLeft: moderateScale(10),
-    },
-    headerAcoes: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-        paddingRight: moderateScale(10),
-    },
-    cellNome: {
-        flex: 4,
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-        paddingLeft: moderateScale(10),
-    },
-    cellAcoes: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingRight: moderateScale(10),
     },
     headerNomeCompleto: {
         flex: 3,
@@ -246,8 +244,27 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         paddingLeft: 0,
     },
+    headerCor: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+    },
+    cellCor: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        height: 20,
+        width: 20,
+        borderRadius: 10,
+        marginRight: 10,
+    },
+    headerAcoes: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        paddingRight: moderateScale(10),
+    },
 });
 
 export default IndexGrupoDeAnestesia;
-
 

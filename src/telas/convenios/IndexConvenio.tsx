@@ -1,20 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, Alert } from 'react-native';
 import GlobalLayout from '../../layouts/GlobalLayout';
 import SearchbarConvenios from './componentes/SearchbarConvenios';
-import { useNavigation } from '@react-navigation/native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import AcoesBotoes from '../../componentes/Botões/AcoesBotoes';
 import * as ConvenioService from '../../services/ConvenioService';
 import { QueryClient, QueryClientProvider, useInfiniteQuery } from 'react-query';
 import Paginacao from '../../componentes/paginacao/Paginacao';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CabecalhoConvenios from './componentes/CabecalhoConvenios';
+import { scale, moderateScale } from 'react-native-size-matters';
 
 type Convenio = {
     id: number;
     nome: string;
     nomeabreviado: string;
+    cor: string; // Adicionando a propriedade cor
     createdAt: string;
     updatedAt: string;
 };
@@ -43,7 +44,8 @@ const IndexConvenio = () => {
         }
     );
 
-    const handleDeletarConvenio = (id: number) => {
+       // Função para lidar com a exclusão de um convênio
+       const handleDeletarConvenio = (id: number) => {
         Alert.alert(
             "Confirmação",
             "Tem certeza de que deseja excluir este convênio?",
@@ -54,6 +56,7 @@ const IndexConvenio = () => {
         );
     };
 
+    // Função para confirmar a exclusão de um convênio
     const deletarConvenioConfirmado = async (id: number) => {
         try {
             const response = await ConvenioService.deletarConvenio(id);
@@ -71,21 +74,24 @@ const IndexConvenio = () => {
         }
     };
 
+    // Efeito para buscar e ordenar os dados ao focar no componente
     useFocusEffect(
         React.useCallback(() => {
             ConvenioService.obterTodosConvenios()
             .then(conveniosResponse => {
                 const conveniosFetched = conveniosResponse.data;
-                console.log("conveniosFetched:", conveniosFetched);
-                setConvenios(conveniosFetched);
-                setFilteredData(conveniosFetched);
+                // Ordenando os dados em ordem alfabética pelo nome
+                const dadosOrdenados = conveniosFetched.sort((a: Convenio, b: Convenio) => a.nome.localeCompare(b.nome));
+                setConvenios(dadosOrdenados);
+                setFilteredData(dadosOrdenados);
             })
             .catch(error => {
                 console.error('Erro ao buscar dados:', error);
             });
         }, [])
     );
-    
+
+    // Função para lidar com mudanças na barra de pesquisa
     const handleSearchChange = (text: string) => {
         const newData = convenios.filter(item => {
             const itemData = item.nome.toUpperCase();
@@ -96,7 +102,7 @@ const IndexConvenio = () => {
     };
 
     return (
-        <GlobalLayout showBackButton={true} headerComponent={<CabecalhoConvenios style={styles.cabecalhoPadding} />}>
+        <GlobalLayout showBackButton={true} headerComponent={<CabecalhoConvenios />}>
             <QueryClientProvider client={queryClient}>
                 <ScrollView style={styles.container}>
                     <View style={styles.searchAndIconContainer}>
@@ -106,7 +112,7 @@ const IndexConvenio = () => {
                         />
                         <Icon 
                             name="plus" 
-                            size={24} 
+                            size={scale(24)} 
                             color="#000"
                             style={styles.iconStyle}
                             onPress={() => (navigation as any).navigate('NovoConvenio')}
@@ -118,13 +124,15 @@ const IndexConvenio = () => {
                     <View style={styles.tableHeader}>
                         <View style={styles.headerNomeCompleto}><Text style={styles.headerText}>Convênio</Text></View>
                         <View style={styles.headerNomeAbreviado}><Text style={styles.headerText}>Abreviação</Text></View>
+                        <View style={styles.headerCor}><Text style={styles.headerText}>Cor</Text></View>
                         <View style={styles.headerAcoes}><Text style={styles.headerText}>Ações</Text></View>
-                     </View>
+                    </View>
 
                     {filteredData.map(conv => (
                         <View key={conv.id} style={styles.row}>
                             <View style={styles.cellNomeCompleto}><Text>{conv.nome}</Text></View>
                             <View style={styles.cellNomeAbreviado}><Text>{conv.nomeabreviado}</Text></View>
+                            <View style={[styles.cellCor, { backgroundColor: conv.cor }]}></View>
                             <AcoesBotoes
                                 onEditarPress={() => (navigation as any).navigate('NovoConvenio', { convenioId: conv.id })}
                                 onDeletarPress={() => handleDeletarConvenio(conv.id)}
@@ -132,7 +140,7 @@ const IndexConvenio = () => {
                         </View>
                     ))}
                     <Paginacao
-                                                currentPage={data?.pages.length || 1}
+                        currentPage={data?.pages.length || 1}
                         totalPages={data?.pages[data?.pages.length - 1]?.meta.totalPages || 1}
                         onPageChange={(page: number) => { }}
                     />
@@ -146,65 +154,47 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
-    cabecalhoPadding: {
-        paddingLeft: 50,
-    },
     searchAndIconContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: 10,
-    },
-    iconsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        flex: 1,
+        padding: moderateScale(10),
     },
     iconStyle: {
-        marginLeft: 20,
+        marginLeft: moderateScale(15),
     },
     headerText: {
-        fontSize: 14,
+        fontSize: moderateScale(14),
         fontWeight: 'bold',
         color: '#000',
-        padding: 10,
-    },
-    table: {
-        flex: 1,
-        padding: 20,
+        padding: moderateScale(10),
     },
     tableHeader: {
         flexDirection: 'row',
-        borderBottomWidth: 0,
+        borderBottomWidth: 1,
         borderBottomColor: '#ddd',
-        paddingVertical: 10,
+        paddingVertical: moderateScale(10),
         backgroundColor: '#f7f7f7',
-        paddingLeft: 10,
+        paddingLeft: moderateScale(10),
     },
     row: {
         flexDirection: 'row',
-        borderBottomWidth: 0.0,
+        borderBottomWidth: 1,
         borderBottomColor: '#ddd',
-        paddingVertical: 10,
-        paddingLeft: 20,
+        paddingVertical: moderateScale(10),
+        paddingLeft: moderateScale(10),
     },
     headerNomeCompleto: {
         flex: 3,
         justifyContent: 'flex-start',
         alignItems: 'flex-start',
-        paddingLeft: 10,
+        paddingLeft: moderateScale(10),
     },
     headerNomeAbreviado: {
         flex: 2,
         justifyContent: 'flex-end',
         alignItems: 'flex-start',
-        paddingLeft: -20,
-    },
-    headerAcoes: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-        paddingLeft: 0,
+        paddingLeft: -moderateScale(20),
     },
     cellNomeCompleto: {
         flex: 3,
@@ -218,12 +208,28 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         paddingLeft: 0,
     },
-    cellAcoes: {
+    headerCor: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-start',
+    },
+    cellCor: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        height: 20,
+        width: 20,
+        borderRadius: 10,
+        marginRight: 10,
+    },
+    headerAcoes: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        paddingRight: moderateScale(10),
     },
 });
 
-
 export default IndexConvenio;
+
+

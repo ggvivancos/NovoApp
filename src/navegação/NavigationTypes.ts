@@ -26,6 +26,14 @@ export type RootStackParamList = {
     IndexCor: undefined;
     NovoCor: undefined;
     IndexSetorESala: undefined;
+    NovoSetoreSala: undefined;
+    IndexPaciente: undefined;
+    NovoPàciente: undefined;
+    IndexAgendamento: undefined;
+    NovoAgendamento: undefined;
+    IndexStatus: undefined;
+    NovoStatus: undefined;
+    
     // ...
   };
   

@@ -149,6 +149,10 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
             <SidebarItem title="AGENDA DE PROCEDIMENTOS" onPress={() => { }} />
 
             <SubMenu title="BANCO DE DADOS">
+            <SidebarItem title="Agendamentos" onPress={() => {
+                    navigation.navigate('IndexAgendamento');
+                    handleClose();
+                }} />
                 <SidebarItem title="Anestesistas" onPress={() => {
                     navigation.navigate('IndexAnestesista');
                     handleClose();
@@ -178,8 +182,16 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
                     navigation.navigate('IndexHospital');
                     handleClose();
                 }} />
+                <SidebarItem title="Pacientes" onPress={() => {
+                    navigation.navigate('IndexPaciente');
+                    handleClose();
+                }} />
                 <SidebarItem title="Procedimentos" onPress={() => {
                     navigation.navigate('IndexProcedimento');
+                    handleClose();
+                }} />
+                <SidebarItem title="Status" onPress={() => {
+                    navigation.navigate('IndexStatus');
                     handleClose();
                 }} />
             </SubMenu>

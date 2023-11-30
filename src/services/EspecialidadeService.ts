@@ -1,15 +1,22 @@
 import * as crudService from './crudservice';
 
 const BASE_URL = 'http://10.0.2.2:5000/api';
-
 const URL_ESPECIALIDADE = '/especialidades';
+
+// Tipagem para os dados da especialidade
+interface EspecialidadeData {
+    nome: string;
+    nomeabreviado: string;
+    cor?: string; // A coluna 'cor' é opcional
+}
 
 /**
  * Cria uma nova especialidade.
  * @param data Dados da especialidade.
  * @returns Promise com a resposta da API.
  */
-export const criarEspecialidade = (data: any) => {
+export const criarEspecialidade = (data: EspecialidadeData) => {
+    // Aqui você pode adicionar validações para os dados, se necessário
     return crudService.criar(URL_ESPECIALIDADE, data);
 };
 
@@ -27,7 +34,8 @@ export const obterEspecialidades = (limit: number = 25, page: number = 1) => {
  * @param data Dados atualizados da especialidade.
  * @returns Promise com a resposta da API.
  */
-export const atualizarEspecialidade = (id: number, data: any) => {
+export const atualizarEspecialidade = (id: number, data: EspecialidadeData) => {
+    // Aqui você pode adicionar validações para os dados, se necessário
     return crudService.atualizar(`${URL_ESPECIALIDADE}/${id}`, data);
 };
 

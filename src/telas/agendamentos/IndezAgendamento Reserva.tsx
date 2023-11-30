@@ -6,22 +6,17 @@ import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native';
 import AcoesBotoes from '../../componentes/Botões/AcoesBotoes';
 import * as AgendamentoService from '../../services/AgendamentoService';
-import { QueryClient, QueryClientProvider, useInfiniteQuery } from 'react-query';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import Paginacao from '../../componentes/paginacao/Paginacao';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CabecalhoAgendamentos from './componentes/CabecalhoAgendamentos';
-
-type StatusAgendamento = {
-    nome: string;
-    cor: string;
-};
 
 type Agendamento = {
     id: number;
     datadacirurgia: string;
     horainicio: string;
     duracaoEstimada: string;
-    status: StatusAgendamento;
+    status: string;
     uti: boolean;
     apa: boolean;
     leito: string;
@@ -33,11 +28,6 @@ type Agendamento = {
     isDeleted: boolean;
     Paciente: {
         nomecompleto: string;
-        datadenascimento: string; // Novo campo
-        observacao: string; // Novo campo
-        VAD: boolean; // Novo campo
-        alergia: boolean; // Novo campo
-        alergialatex: boolean; // Novo campo
     };
     Anestesistum: {
         nomecompleto: string;
@@ -60,66 +50,23 @@ type Agendamento = {
     // Adicione outros relacionamentos conforme necessário
 };
 
-
-
-
 const queryClient = new QueryClient();
 
 const IndexAgendamento = () => {
     const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
     const [filteredData, setFilteredData] = useState<Agendamento[]>([]);
     const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
+    const [currentPage, setCurrentPage] = useState(1); // Estado para controlar a página atual
+    const [totalPages, setTotalPages] = useState(0); // Estado para o total de páginas
     const navigation = useNavigation();
-    const [currentPageState, setCurrentPageState] = useState<number>(1);
-    const formatarHoraInicio = (horaString: string) => {
-        // Supõe que a string está no formato 'HH:MM:SS'
-        const partes = horaString.split(':');
-        if (partes.length >= 2) {
-            // Retorna apenas as horas e minutos
-            return `${partes[0]}:${partes[1]}`;
-        } else {
-            // Retorna a string original se não estiver no formato esperado
-            return horaString;
-        }
-    };
-    const {
-        data,
-        fetchNextPage,
-        hasNextPage,
-        isLoading,
-        isFetchingNextPage,
-        error
-    } = useInfiniteQuery(
-        'agendamentos',
-        ({ pageParam = 1 }) => AgendamentoService.obterAgendamentos(25, pageParam),
-        {
-            getNextPageParam: (lastPage, pages) => {
-                return lastPage.meta.currentPage < lastPage.meta.totalPages ? lastPage.meta.currentPage + 1 : false;
-            }
-        }
-    );
-
-    const handlePageChange = async (newPage: number) => {
-        setCurrentPageState(newPage);
-        try {
-            const response = await AgendamentoService.obterAgendamentos(25, newPage);
-            if (response && Array.isArray(response.data)) {
-                setAgendamentos(response.data);
-                setFilteredData(response.data);
-            } else {
-                console.error("A resposta da API não é um array ou está indefinida:", response);
-            }
-        } catch (error) {
-            console.error("Erro ao buscar dados da página:", newPage, error);
-        }
-    };
 
     // Funções para buscar os dados dos agendamentos
-    const buscarAgendamentos = async () => {
+    const buscarAgendamentos = async (pagina = 1) => {
         try {
-            const response = await AgendamentoService.obterTodosAgendamentos(); // Substitua com a chamada correta ao seu serviço
-            setAgendamentos(response.data);
-            setFilteredData(response.data);
+            const response = await AgendamentoService.obterTodosAgendamentos(); // Ajuste para incluir a página
+            setAgendamentos(response.data.data); // Atualiza os agendamentos
+            setFilteredData(response.data.data); // Atualiza os dados filtrados
+            setTotalPages(response.data.totalPages); // Atualiza o total de páginas
         } catch (error) {
             console.error('Erro ao buscar agendamentos:', error);
         }
@@ -174,45 +121,27 @@ const IndexAgendamento = () => {
         setExpandedRowId(expandedRowId === id ? null : id);
     };
 
+    // Renderização da linha expandida
     const renderExpandedRow = (agendamento: Agendamento) => (
         <View style={styles.expandedRow}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                {/* Coluna Esquerda */}
-                <View style={{ flex: 1, paddingRight: 10 }}>
-                    <Text style={styles.expandedText}>Data de Nascimento do Paciente: {formatarData(agendamento.Paciente.datadenascimento)}</Text>
-                    <Text style={styles.expandedText}>Observação do Paciente: {agendamento.Paciente.observacao}</Text>
-                    <Text style={styles.expandedText}>VAD: {agendamento.Paciente.VAD ? 'Sim' : 'Não'}</Text>
-                    <Text style={styles.expandedText}>Alergia: {agendamento.Paciente.alergia ? 'Sim' : 'Não'}</Text>
-                    <Text style={styles.expandedText}>Alergia a Látex: {agendamento.Paciente.alergialatex ? 'Sim' : 'Não'}</Text>
-                    <Text style={styles.expandedText}>UTI: {agendamento.uti ? 'Sim' : 'Não'}</Text>
-                    <Text style={styles.expandedText}>APA: {agendamento.apa ? 'Sim' : 'Não'}</Text>
-                    <Text style={styles.expandedText}>Leito: {agendamento.leito}</Text>
-                </View>
-    
-                {/* Coluna Direita */}
-                <View style={{ flex: 1, paddingLeft: 10 }}>
-                    <Text style={styles.expandedText}>Observação: {agendamento.observacao}</Text>
-                    <Text style={styles.expandedText}>Aviso: {agendamento.aviso}</Text>
-                    <Text style={styles.expandedText}>Prontuário: {agendamento.prontuario}</Text>
-                    <Text style={styles.expandedText}>Lateralidade: {agendamento.lateralidade}</Text>
-                    <Text style={styles.expandedText}>Pacote: {agendamento.pacote ? 'Sim' : 'Não'}</Text>
-                    <Text style={styles.expandedText}>Anestesista: {agendamento.Anestesistum ? agendamento.Anestesistum.nomecompleto : 'Não informado'}</Text>
-                    <Text style={styles.expandedText}>Hospital: {agendamento.Hospital.nome}</Text>
-                    <Text style={styles.expandedText}>Setor: {agendamento.Setor ? agendamento.Setor.nome : 'Não informado'}</Text>
-                    <Text style={styles.expandedText}>Sala de Cirurgia: {agendamento.SalaDeCirurgium ? agendamento.SalaDeCirurgium.nome : 'Não informado'}</Text>
-                </View>
-            </View>
+            {/* Adicione aqui a renderização de campos adicionais do agendamento */}
+            <Text style={styles.expandedText}>Hora de Início: {agendamento.horainicio}</Text>
+            {/* Adicione mais campos conforme necessário */}
         </View>
     );
-    
+
+    // Função para mudar de página
+    const mudarPagina = (novaPagina: number) => {
+        setCurrentPage(novaPagina);
+        buscarAgendamentos(novaPagina);
+    };
 
     // Efeito para buscar agendamentos quando o componente é focado
     useFocusEffect(
         React.useCallback(() => {
-            handlePageChange(1);
+            buscarAgendamentos();
         }, [])
     );
-
 
     return (
         <GlobalLayout showBackButton={true} headerComponent={<CabecalhoAgendamentos style={styles.cabecalhoPadding} />}>
@@ -230,10 +159,10 @@ const IndexAgendamento = () => {
                             style={styles.iconStyle}
                             onPress={() => (navigation as any).navigate('NovoAgendamento')}
                         />
+                        
                     </View>
                     {/* Renderização da lista de agendamentos */}
                     <View style={styles.tableHeader}>
-                        <View style={styles.headerStatus}><Text style={styles.headerText}>Status</Text></View>
                         <View style={styles.headerData}><Text style={styles.headerText}>Data</Text></View>
                         <View style={styles.headerHora}><Text style={styles.headerText}>Hora</Text></View>
                         <View style={styles.headerPaciente}><Text style={styles.headerText}>Paciente</Text></View>
@@ -243,40 +172,35 @@ const IndexAgendamento = () => {
                     </View>
 
                     {filteredData.map(agendamento => (
-    <React.Fragment key={agendamento.id}>
-        <TouchableOpacity style={styles.row} onPress={() => toggleRowExpansion(agendamento.id)}>
-            <View style={styles.cellStatus}>
-                <View style={[styles.statusCircle, { backgroundColor: agendamento.status ? agendamento.status.cor : 'grey' }]} />
-                <Text style={styles.statusText}>
-                    {agendamento.status ? agendamento.status.nome : 'Indefinido'}
-                </Text>
-            </View>
-            <View style={styles.cellData}><Text>{formatarData(agendamento.datadacirurgia)}</Text></View>
-            <View style={styles.cellHora}><Text>{formatarHoraInicio(agendamento.horainicio)}</Text></View>
-            <View style={styles.cellPaciente}><Text>{agendamento.Paciente.nomecompleto}</Text></View>
-            <View style={styles.cellProcedimento}><Text>{agendamento.Procedimentos.map(p => p.nome).join(', ')}</Text></View>
-            <View style={styles.cellCirurgiao}><Text>{agendamento.Cirurgiaos.map(c => c.nomecompleto).join(', ')}</Text></View>
-            <AcoesBotoes
-                onEditarPress={() => (navigation as any).navigate('EditarAgendamento', { agendamentoId: agendamento.id })}
-                onDeletarPress={() => handleDeletarAgendamento(agendamento.id)}
-            />
-        </TouchableOpacity>
-        {expandedRowId === agendamento.id && renderExpandedRow(agendamento)}
-    </React.Fragment>
-))}
+                        <React.Fragment key={agendamento.id}>
+                            <TouchableOpacity style={styles.row} onPress={() => toggleRowExpansion(agendamento.id)}>
+                                <View style={styles.cellData}><Text>{formatarData(agendamento.datadacirurgia)}</Text></View>
+                                <View style={styles.cellHora}><Text>{agendamento.horainicio}</Text></View>
+                                <View style={styles.cellPaciente}><Text>{agendamento.Paciente.nomecompleto}</Text></View>
+                                <View style={styles.cellProcedimento}><Text>{agendamento.Procedimentos.map(p => p.nome).join(', ')}</Text></View>
+                                <View style={styles.cellCirurgiao}><Text>{agendamento.Cirurgiaos.map(c => c.nomecompleto).join(', ')}</Text></View>
+                                <AcoesBotoes
+                                    onEditarPress={() => (navigation as any).navigate('EditarAgendamento', { agendamentoId: agendamento.id })}
+                                    onDeletarPress={() => handleDeletarAgendamento(agendamento.id)}
+                                />
+                            </TouchableOpacity>
+                            {expandedRowId === agendamento.id && renderExpandedRow(agendamento)}
+                        </React.Fragment>
+                    ))}
 
-
-                <Paginacao
-                    currentPage={currentPageState}
-                    totalPages={data?.pages[data?.pages.length - 1]?.meta.totalPages || 1}
-                    onPageChange={handlePageChange}
-                />
+                    {/* Componente de Paginação */}
+                    <Paginacao
+                        currentPage={currentPage}
+                        totalPages={totalPages} // Usa o estado totalPages
+                        onPageChange={mudarPagina}
+                    />
                 </ScrollView>
             </QueryClientProvider>
         </GlobalLayout>
     );
 };
 
+// Estilos
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -307,14 +231,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#f7f7f7',
         paddingLeft: 10,
     },
-    headerStatus: {
-        flex: 1, // Metade da largura de 'Data'
-    },
     headerData: {
         flex: 2,
     },
     headerHora: {
-        flex: 0.75, // Mais estreita
+        flex: 1,
     },
     headerPaciente: {
         flex: 2,
@@ -338,28 +259,17 @@ const styles = StyleSheet.create({
         paddingVertical: 10,
         paddingLeft: 20,
     },
-    cellStatus: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-
-    statusCircle: {
-        width: 15,
-        height: 15,
-        borderRadius: 15 / 2,
-        marginBottom: 5,
-    },
-    statusText: {
-        fontSize: 10,
-        textAlign: 'center',
-    },
-
     cellData: {
         flex: 2,
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        paddingLeft: 10,
     },
     cellHora: {
-        flex: 0.75, // Mais estreita
+        flex: 1,
+        justifyContent: 'flex-start',
+        alignItems: 'flex-start',
+        paddingLeft: 10,
     },
     cellPaciente: {
         flex: 2,
@@ -392,6 +302,5 @@ const styles = StyleSheet.create({
     },
     // Adicione aqui mais estilos conforme necessário
 });
-
 
 export default IndexAgendamento;
