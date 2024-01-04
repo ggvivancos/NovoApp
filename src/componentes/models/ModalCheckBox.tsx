@@ -6,15 +6,16 @@ interface Item {
     label: string;
 }
 
-interface ModalModeloProps {
+interface ModalCheckBoxProps {
     isVisible: boolean;
     onDismiss: () => void;
     onItemSelected: (itemId: number) => void;
     items: Item[];
+    selectedItems: number[];
     title?: string;
 }
 
-const ModalModelo: React.FC<ModalModeloProps> = ({ isVisible, onDismiss, onItemSelected, items, title = "Selecione um item" }) => {
+const ModalCheckBox: React.FC<ModalCheckBoxProps> = ({ isVisible, onDismiss, onItemSelected, items, selectedItems, title = "Selecione um item" }) => {
     const [searchText, setSearchText] = useState('');
     const [filteredItems, setFilteredItems] = useState(items);
 
@@ -23,6 +24,10 @@ const ModalModelo: React.FC<ModalModeloProps> = ({ isVisible, onDismiss, onItemS
             items.filter(item => item.label.toLowerCase().includes(searchText.toLowerCase()))
         );
     }, [searchText, items]);
+
+    const isItemSelected = (id: number) => {
+        return selectedItems.includes(id);
+    };
 
     return (
         <Modal
@@ -34,30 +39,26 @@ const ModalModelo: React.FC<ModalModeloProps> = ({ isVisible, onDismiss, onItemS
             <View style={styles.modalOverlay}>
                 <View style={styles.modalView}>
                     <Text style={styles.modalTitle}>{title}</Text>
-
                     <TextInput
                         style={styles.searchInput}
                         value={searchText}
                         onChangeText={setSearchText}
                         placeholder="Pesquisar..."
                     />
-
-                    <ScrollView style={styles.scrollView}>
-                        <View style={styles.modalContent}>
-                            {filteredItems.map(item => (
+                    <View style={styles.scrollViewContainer}>
+                        <ScrollView>
+                            {filteredItems.map((item) => (
                                 <TouchableOpacity 
-                                    key={item.id} 
-                                    onPress={() => {
-                                        onItemSelected(item.id);
-                                    }}
-                                    style={styles.modalItem}
+                                    key={item.id.toString()} 
+                                    onPress={() => onItemSelected(item.id)}
+                                    style={styles.itemContainer}
                                 >
-                                    <Text style={styles.modalItemText}>{item.label}</Text>
+                                    <View style={isItemSelected(item.id) ? styles.checkboxChecked : styles.checkboxUnchecked} />
+                                    <Text style={styles.itemText}>{item.label}</Text>
                                 </TouchableOpacity>
                             ))}
-                        </View>
-                    </ScrollView>
-
+                        </ScrollView>
+                    </View>
                     <TouchableOpacity style={styles.modalCloseButton} onPress={onDismiss}>
                         <Text style={styles.modalCloseButtonText}>Fechar</Text>
                     </TouchableOpacity>
@@ -65,97 +66,91 @@ const ModalModelo: React.FC<ModalModeloProps> = ({ isVisible, onDismiss, onItemS
             </View>
         </Modal>
     );
-}
+};
 
 const styles = StyleSheet.create({
-    inputSelector: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: 10,
-        marginBottom: 20,
-        borderRadius: 10,
-        backgroundColor: '#f5f5f5',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
-        height: 50,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingRight: 10
-    },
-    inputText: {
-        color: 'black'
-    },
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalView: {
         marginHorizontal: 20,
         padding: 20,
-        backgroundColor: "white",
+        backgroundColor: 'white',
         borderRadius: 20,
-        alignItems: "center",
-        shadowColor: "#000",
+        alignItems: 'center',
+        shadowColor: '#000',
         shadowOffset: {
             width: 0,
-            height: 2
+            height: 2,
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
-        elevation: 5
+        elevation: 5,
     },
     modalTitle: {
-        fontSize: 15,
+        fontSize: 18,
         marginBottom: 15,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
     },
-        modalItem: {
+    searchInput: {
+        borderColor: '#ddd',
+        borderWidth: 1,
         padding: 10,
-        borderBottomWidth: 0,
-        borderBottomColor: '#eee',
-        width: '100%'
+        marginBottom: 15,
+        borderRadius: 10,
+        backgroundColor: '#f5f5f5',
+        width: '100%',
     },
-    modalItemText: {
+    flatList: {
+        maxHeight: 300,
+        width: '100%',
+    },
+    itemContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
+    checkboxUnchecked: {
+        width: 20,
+        height: 20,
+        borderRadius: 5,
+        borderWidth: 2,
+        borderColor: '#000',
+        marginRight: 10,
+    },
+    checkboxChecked: {
+        width: 20,
+        height: 20,
+        borderRadius: 5,
+        backgroundColor: '#000',
+        marginRight: 10,
+    },
+    itemText: {
+        fontSize: 16,
         color: 'black',
-        fontSize: 14
     },
     modalCloseButton: {
         backgroundColor: '#89D5B8',
         borderRadius: 25,
         height: 40,
         width: 120,
-        margin: 10,
-        padding: 0,
+        marginTop: 20,
         alignItems: 'center',
         justifyContent: 'center',
     },
     modalCloseButtonText: {
         color: 'white',
         fontSize: 17,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
     },
-    searchInput: {
-        
-        borderColor: '#333',
-        padding: 10,
-        marginBottom: 15,
-        borderRadius: 10,
-        backgroundColor: '#f5f5f5',
-        width: '100%'
-    },
-
-    scrollView: {
-        width: '100%',
+    scrollViewContainer: {
         maxHeight: 300, // Ajuste esta altura conforme necessário
-    },
-    modalContent: {
         width: '100%',
     },
 });
 
-export default ModalModelo;
+export default ModalCheckBox;

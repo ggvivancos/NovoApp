@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, View, TouchableOpacity, Text, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { Paciente } from '../../types/types';
 
-interface Item {
-    id: number;
-    label: string;
-}
-
-interface ModalModeloProps {
+interface ModalPacienteProps {
     isVisible: boolean;
     onDismiss: () => void;
-    onItemSelected: (itemId: number) => void;
-    items: Item[];
+    onPacienteSelected: (paciente: Paciente) => void;
+    onPacienteCreated: (nome: string) => void;
+    pacientes: Paciente[];
     title?: string;
 }
 
-const ModalModelo: React.FC<ModalModeloProps> = ({ isVisible, onDismiss, onItemSelected, items, title = "Selecione um item" }) => {
+const ModalPaciente: React.FC<ModalPacienteProps> = ({
+    isVisible, onDismiss, onPacienteSelected, onPacienteCreated, pacientes, title = "Selecione um paciente"
+}) => {
     const [searchText, setSearchText] = useState('');
-    const [filteredItems, setFilteredItems] = useState(items);
+    const [filteredPacientes, setFilteredPacientes] = useState<Paciente[]>([]);
 
     useEffect(() => {
-        setFilteredItems(
-            items.filter(item => item.label.toLowerCase().includes(searchText.toLowerCase()))
+        setFilteredPacientes(
+            pacientes.filter(paciente => paciente.nomecompleto.toLowerCase().includes(searchText.toLowerCase()))
         );
-    }, [searchText, items]);
+    }, [searchText, pacientes]);
+
+    const handleCreateNewPaciente = () => {
+        onPacienteCreated(searchText);
+        onDismiss();
+    };
 
     return (
         <Modal
@@ -39,24 +43,28 @@ const ModalModelo: React.FC<ModalModeloProps> = ({ isVisible, onDismiss, onItemS
                         style={styles.searchInput}
                         value={searchText}
                         onChangeText={setSearchText}
-                        placeholder="Pesquisar..."
+                        placeholder="Pesquisar paciente..."
                     />
 
-                    <ScrollView style={styles.scrollView}>
-                        <View style={styles.modalContent}>
-                            {filteredItems.map(item => (
+                    <View style={styles.scrollViewContainer}>
+                        <ScrollView>
+                            {filteredPacientes.map((item) => (
                                 <TouchableOpacity 
-                                    key={item.id} 
-                                    onPress={() => {
-                                        onItemSelected(item.id);
-                                    }}
+                                    key={item.id.toString()} 
+                                    onPress={() => onPacienteSelected(item)}
                                     style={styles.modalItem}
                                 >
-                                    <Text style={styles.modalItemText}>{item.label}</Text>
+                                    <Text style={styles.modalItemText}>{item.nomecompleto}</Text>
                                 </TouchableOpacity>
                             ))}
-                        </View>
-                    </ScrollView>
+                        </ScrollView>
+                    </View>
+
+                    {searchText && !filteredPacientes.length && (
+                        <TouchableOpacity onPress={handleCreateNewPaciente} style={styles.createNewButton}>
+                            <Text style={styles.createNewText}>Criar novo paciente: {searchText}</Text>
+                        </TouchableOpacity>
+                    )}
 
                     <TouchableOpacity style={styles.modalCloseButton} onPress={onDismiss}>
                         <Text style={styles.modalCloseButtonText}>Fechar</Text>
@@ -67,28 +75,8 @@ const ModalModelo: React.FC<ModalModeloProps> = ({ isVisible, onDismiss, onItemS
     );
 }
 
+
 const styles = StyleSheet.create({
-    inputSelector: {
-        borderWidth: 1,
-        borderColor: '#ddd',
-        padding: 10,
-        marginBottom: 20,
-        borderRadius: 10,
-        backgroundColor: '#f5f5f5',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 3,
-        height: 50,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingRight: 10
-    },
-    inputText: {
-        color: 'black'
-    },
     modalOverlay: {
         flex: 1,
         justifyContent: 'center',
@@ -110,19 +98,37 @@ const styles = StyleSheet.create({
         elevation: 5
     },
     modalTitle: {
-        fontSize: 15,
+        fontSize: 18,
         marginBottom: 15,
         fontWeight: 'bold'
     },
-        modalItem: {
+    searchInput: {
+        borderColor: '#ddd',
+        borderWidth: 1,
         padding: 10,
-        borderBottomWidth: 0,
+        marginBottom: 15,
+        borderRadius: 10,
+        width: '100%'
+    },
+    modalItem: {
+        padding: 10,
+        borderBottomWidth: 1,
         borderBottomColor: '#eee',
         width: '100%'
     },
     modalItemText: {
         color: 'black',
-        fontSize: 14
+        fontSize: 16
+    },
+    createNewButton: {
+        padding: 10,
+        marginTop: 10,
+        backgroundColor: '#e7e7e7',
+        borderRadius: 10
+    },
+    createNewText: {
+        color: '#007bff',
+        fontSize: 16
     },
     modalCloseButton: {
         backgroundColor: '#89D5B8',
@@ -130,7 +136,6 @@ const styles = StyleSheet.create({
         height: 40,
         width: 120,
         margin: 10,
-        padding: 0,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -139,23 +144,11 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontWeight: 'bold'
     },
-    searchInput: {
-        
-        borderColor: '#333',
-        padding: 10,
-        marginBottom: 15,
-        borderRadius: 10,
-        backgroundColor: '#f5f5f5',
-        width: '100%'
-    },
 
-    scrollView: {
-        width: '100%',
+    scrollViewContainer: {
         maxHeight: 300, // Ajuste esta altura conforme necessário
-    },
-    modalContent: {
         width: '100%',
     },
 });
 
-export default ModalModelo;
+export default ModalPaciente;

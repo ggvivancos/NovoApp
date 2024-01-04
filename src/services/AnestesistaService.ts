@@ -60,5 +60,9 @@ export const obterAnestesistaPorId = async (id: string) => {
     }
 }
 
+export const obterTodosAnestesistas = () => {
+    return crudService.ler(`${URL_ANESTESISTA}?all=true`);
+};
+
 
 

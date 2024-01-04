@@ -21,6 +21,11 @@ export const obterStatus = (limit: number = 25, page: number = 1) => {
     return crudService.ler(`${URL_STATUS}?limit=${limit}&page=${page}`);
 };
 
+
+export const obterTodosStatus = () => {
+    return crudService.ler(`${URL_STATUS}?all=true`);
+};
+
 /**
  * Atualiza um status existente.
  * @param id ID do status.

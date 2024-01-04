@@ -33,6 +33,13 @@ export type RootStackParamList = {
     NovoAgendamento: undefined;
     IndexStatus: undefined;
     NovoStatus: undefined;
+    IndexRecursoComplementar: undefined;
+    NovoRecursoComplementar: undefined;
+    IndexFornecedor: undefined;
+    NovoFornecedor: undefined;
+    IndexOPME: undefined;
+    NovoOPME: undefined;
+    
     
     // ...
   };

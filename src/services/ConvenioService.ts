@@ -76,5 +76,6 @@ export const obterConvenioPorId = async (id: string) => {
  * @returns Promise com a lista de convênios.
  */
 export const obterTodosConvenios = () => {
-    return crudService.ler(URL_CONVENIO);
+    return crudService.ler(`${URL_CONVENIO}?all=true`);
 };
+

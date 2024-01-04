@@ -67,5 +67,7 @@ export const obterEspecialidadePorId = async (id: string) => {
 }
 
 export const obterTodasEspecialidades = () => {
-    return crudService.ler(URL_ESPECIALIDADE);
+    return crudService.ler(`${URL_ESPECIALIDADE}?all=true`);
 };
+
+

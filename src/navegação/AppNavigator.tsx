@@ -19,7 +19,7 @@ import NovoEspecialidade from '../telas/especialidades/NovoEspecialidade';
 import IndexEspecialidade from '../telas/especialidades/IndexEspecialidade';
 import NovoGrupoDeAnestesia from '../telas/gruposdeanestesia/NovoGrupoDeAnestesia';
 import IndexGrupoDeAnestesia from '../telas/gruposdeanestesia/IndexGrupoDeAnestesia';
-//import NovoAgendamento from '../telas/agendamentos/NovoAgendamento';
+import NovoAgendamento from '../telas/agendamentos/NovoAgendamento';
 import IndexAgendamento from '../telas/agendamentos/IndexAgendamento';
 import NovoCor from '../telas/cores/NovoCor';
 import IndexCor from '../telas/cores/IndexCor';
@@ -29,6 +29,12 @@ import IndexPaciente from '../telas/pacientes/IndexPaciente';
 import NovoPaciente from '../telas/pacientes/NovoPaciente';
 import IndexStatus from '../telas/status/IndexStatus';
 import NovoStatus from '../telas/status/NovoStatus';
+import IndexRecursoComplementar from '../telas/recursoscomplementares/IndexRecursoComplementar';
+import NovoRecursoComplementar from '../telas/recursoscomplementares/NovoRecursoComplementar';
+import IndexFornecedor from '../telas/fornecedores/IndexFornecedor';
+import NovoFornecedor from '../telas/fornecedores/NovoFornecedor';
+import IndexOPME from '../telas/OPME/IndexOPME';
+import NovoOPME from '../telas/OPME/NovoOPME';
 
 
 const Stack = createStackNavigator();
@@ -154,6 +160,11 @@ function AppNavigator() {
             options={{ headerShown: false }} 
         />
         <Stack.Screen 
+            name="NovoAgendamento" 
+            component={NovoAgendamento}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
             name="IndexStatus" 
             component={IndexStatus}
             options={{ headerShown: false }} 
@@ -161,6 +172,36 @@ function AppNavigator() {
         <Stack.Screen 
             name="NovoStatus" 
             component={NovoStatus}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="IndexRecursoComplementar" 
+            component={IndexRecursoComplementar}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="NovoRecursoComplementar" 
+            component={NovoRecursoComplementar}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="IndexFornecedor" 
+            component={IndexFornecedor}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="NovoFornecedor" 
+            component={NovoFornecedor}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="IndexOPME" 
+            component={IndexOPME}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="NovoOPME" 
+            component={NovoOPME}
             options={{ headerShown: false }} 
         />
 

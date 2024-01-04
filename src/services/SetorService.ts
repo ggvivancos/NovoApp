@@ -59,5 +59,5 @@ export const obterSetoresPorHospital = async (hospitalId: string) => {
 
 
 export const obterTodosSetores = () => {
-    return crudService.ler(URL_SETOR);
+    return crudService.ler(`${URL_SETOR}?all=true`);
 };

@@ -21,6 +21,10 @@ export const obterCirurgioes = (limit: number = 25, page: number = 1) => {
     return crudService.ler(`${URL_CIRURGIAO}?limit=${limit}&page=${page}`);
 };
 
+export const obterTodosCirurgioes = () => {
+    return crudService.ler(`${URL_CIRURGIAO}?all=true`);
+};
+
 /**
  * Atualiza um cirurgião existente.
  * @param id ID do cirurgião.

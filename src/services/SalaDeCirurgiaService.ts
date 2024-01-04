@@ -58,5 +58,5 @@ export const obterSalasDeCirurgiaPorSetor = async (setorId: string) => {
 
 
 export const obterTodasSalasDeCirurgia = () => {
-    return crudService.ler(URL_SALA);
+    return crudService.ler(`${URL_SALA}?all=true`);
 };

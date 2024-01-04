@@ -21,6 +21,10 @@ export const obterHospitais = (limit: number = 25, page: number = 1) => {
     return crudService.ler(`${URL_HOSPITAL}?limit=${limit}&page=${page}`);
 };
 
+export const obterTodosHospitais = () => {
+    return crudService.ler(`${URL_HOSPITAL}?all=true`);
+};
+
 /**
  * Atualiza um hospital existente.
  * @param id ID do hospital.

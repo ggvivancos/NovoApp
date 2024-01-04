@@ -10,23 +10,8 @@ import { QueryClient, QueryClientProvider, useInfiniteQuery } from 'react-query'
 import Paginacao from '../../componentes/paginacao/Paginacao';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CabecalhoPacientes from './componentes/CabecalhoPacientes';
+import { Paciente } from '../../types/types';
 
-type Paciente = {
-    id: number;
-    nomecompleto: string;
-    datadenascimento: string;
-    idade: number;
-    VAD: boolean;
-    alergia: boolean;
-    alergialatex: boolean;
-    prontuario: string;
-    CPF: string;
-    RG: string;
-    telefone: string;
-    observacao: string;
-    createdAt: string;
-    updatedAt: string;
-};
 
 const queryClient = new QueryClient();
 
@@ -121,7 +106,7 @@ const IndexPaciente = () => {
             <Text style={styles.expandedText}>Idade: {paciente.idade}</Text>
             <Text style={styles.expandedText}>VAD: {paciente.VAD ? 'Sim' : 'Não'}</Text>
             <Text style={styles.expandedText}>Alergia: {paciente.alergia ? 'Sim' : 'Não'}</Text>
-            <Text style={styles.expandedText}>Alergia a Látex: {paciente.alergialatex ? 'Sim' : 'Não'}</Text>
+            <Text style={styles.expandedText}>Alergia a Látex: {paciente.alergiaLatex ? 'Sim' : 'Não'}</Text>
             <Text style={styles.expandedText}>Prontuário: {paciente.prontuario}</Text>
             <Text style={styles.expandedText}>CPF: {paciente.CPF}</Text>
             <Text style={styles.expandedText}>RG: {paciente.RG}</Text>

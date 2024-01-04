@@ -70,5 +70,5 @@ export const obterPacientePorId = async (id: string) => {
 }
 
 export const obterTodosPacientes = () => {
-    return crudService.ler(URL_PACIENTE);
+    return crudService.ler(`${URL_PACIENTE}?all=true`);
 };

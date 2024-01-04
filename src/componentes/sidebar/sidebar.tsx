@@ -174,6 +174,11 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
                     navigation.navigate('IndexEspecialidade');
                     handleClose();
                 }} />
+                <SidebarItem title="Fornecedores" onPress={() => {
+                    navigation.navigate('IndexFornecedor');
+                    handleClose();
+                }} />
+                
                 <SidebarItem title="Grupos de Anestesia" onPress={() => {
                     navigation.navigate('IndexGrupoDeAnestesia');
                     handleClose();
@@ -182,12 +187,20 @@ const Sidebar: React.FC<SidebarProps> = ({ position = 'left', onClose, onItemSel
                     navigation.navigate('IndexHospital');
                     handleClose();
                 }} />
+                <SidebarItem title="OPME" onPress={() => {
+                    navigation.navigate('IndexOPME');
+                    handleClose();
+                }} />
                 <SidebarItem title="Pacientes" onPress={() => {
                     navigation.navigate('IndexPaciente');
                     handleClose();
                 }} />
                 <SidebarItem title="Procedimentos" onPress={() => {
                     navigation.navigate('IndexProcedimento');
+                    handleClose();
+                }} />
+                <SidebarItem title="Recursos Complementares" onPress={() => {
+                    navigation.navigate('IndexRecursoComplementar');
                     handleClose();
                 }} />
                 <SidebarItem title="Status" onPress={() => {

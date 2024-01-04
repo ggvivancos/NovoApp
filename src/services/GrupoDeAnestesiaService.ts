@@ -2,8 +2,13 @@ import * as crudService from './crudservice';
 
 const URL_GRUPO_ANESTESIA = '/grupodeanestesia';
 
+
+export const obterGruposDeAnestesia = (limit: number = 25, page: number = 1) => {
+    return crudService.ler(`${URL_GRUPO_ANESTESIA}?limit=${limit}&page=${page}`);
+};
+
 export const obterTodosGruposDeAnestesia = () => {
-    return crudService.ler(URL_GRUPO_ANESTESIA);
+    return crudService.ler(`${URL_GRUPO_ANESTESIA}?all=true`);
 };
 
 export const obterGrupoDeAnestesiaPorId = (id: number) => {

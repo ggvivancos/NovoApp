@@ -66,5 +66,5 @@ export const obterProcedimentoPorId = async (id: string) => {
 }
 
 export const obterTodosProcedimentos = () => {
-    return crudService.ler(URL_PROCEDIMENTO);
+    return crudService.ler(`${URL_PROCEDIMENTO}?all=true`);
 };
