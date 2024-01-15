@@ -5,13 +5,47 @@ import AppButton from '../../componentes/Botões/AppButton';
 import ModalPaciente from '../../componentes/models/ModalPaciente';
 import * as PacienteService from '../../services/PacienteService';
 import { Paciente } from '../../types/types';
+import { useAgendamento } from '../../context/AgendamentoContext';
 
-const Etapa2Agendamento = () => {
+
+
+
+interface Etapa2Props {
+    irParaProximaEtapa: () => void;
+    irParaEtapaAnterior: () => void;
+  }
+
+  const Etapa2Agendamento: React.FC<Etapa2Props> = ({ irParaProximaEtapa, irParaEtapaAnterior }) => {
     const navigation = useNavigation();
     const [pacientes, setPacientes] = useState<Paciente[]>([]);
     const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
     const [isModalVisible, setModalVisible] = useState(false);
     const [isCreatingNewPaciente, setIsCreatingNewPaciente] = useState(false);
+    const { dadosEtapa1, dadosEtapa2, salvarDadosEtapa2 } = useAgendamento();
+
+    const salvarEtapa2 = () => {
+        // Verifica se um paciente foi selecionado ou se está criando um novo
+        if (!pacienteSelecionado && !isCreatingNewPaciente) {
+            Alert.alert('Erro', 'Por favor, selecione ou crie um paciente antes de prosseguir.');
+            return;
+        }
+    
+        // Se estiver criando um novo paciente, salva o paciente antes de prosseguir
+        if (isCreatingNewPaciente) {
+            salvarNovoPaciente();
+        } else if (pacienteSelecionado) {
+            // Se um paciente existente foi selecionado, apenas prossegue para a próxima etapa
+            const dadosEtapa2 = {
+                pacienteId: pacienteSelecionado.id, // Aqui, garantimos que pacienteSelecionado não é null
+                // Inclua aqui outros dados relevantes da Etapa2
+            };
+            salvarDadosEtapa2({ ...dadosEtapa1, ...dadosEtapa2 });
+            irParaProximaEtapa();
+        }
+    };
+    
+      
+
 
     // Campos do formulário de paciente
     const [nomeCompleto, setNomeCompleto] = useState('');
@@ -22,6 +56,28 @@ const Etapa2Agendamento = () => {
     const [VAD, setVAD] = useState(false);
     const [alergia, setAlergia] = useState(false);
     const [alergiaLatex, setAlergiaLatex] = useState(false);
+    const { limparDadosAgendamento } = useAgendamento();
+
+    const cancelarAgendamento = () => {
+        Alert.alert(
+            "Cancelar Agendamento",
+            "Tem certeza de que deseja cancelar o agendamento?",
+            [
+                {
+                    text: "Não",
+                    style: "cancel"
+                },
+                { 
+                    text: "Sim", 
+                    onPress: () => {
+                        limparDadosAgendamento();
+                        navigation.goBack(); // Ou navegue para a tela desejada
+                    }
+                }
+            ]
+        );
+    };
+
 
     useEffect(() => {
         PacienteService.obterTodosPacientes()
@@ -49,6 +105,7 @@ const Etapa2Agendamento = () => {
         setAlergia(paciente.alergia);
         setAlergiaLatex(paciente.alergiaLatex);
         setModalVisible(false);
+        salvarDadosEtapa2({ ...dadosEtapa1, pacienteId: paciente.id });
     };
 
     const handleCriarPaciente = (nome: string) => {
@@ -74,6 +131,8 @@ const Etapa2Agendamento = () => {
         setDataDeNascimento(formattedText);
     };
 
+
+
     const salvarNovoPaciente = () => {
         let dataFormatadaISO = '';
         const partesData = dataDeNascimento.split('/');
@@ -84,6 +143,7 @@ const Etapa2Agendamento = () => {
             return;
         }
 
+        
         const novoPaciente = {
             nomecompleto: nomeCompleto,
             datadenascimento: dataFormatadaISO,
@@ -102,6 +162,9 @@ const Etapa2Agendamento = () => {
                     setIsCreatingNewPaciente(false);
                     setPacienteSelecionado(response);
                     setPacientes([...pacientes, response]);
+                    salvarDadosEtapa2({ ...dadosEtapa1, pacienteId: response.id });
+                    irParaProximaEtapa(); // Prossegue para a próxima etapa
+
                 } else {
                     console.error('Resposta inesperada ao criar paciente:', response);
                     Alert.alert('Erro', 'Erro ao criar paciente. Tente novamente.');
@@ -113,11 +176,28 @@ const Etapa2Agendamento = () => {
             });
     };
 
-    const salvarAgendamento = () => {
-        Alert.alert('Salvar Agendamento', 'Implementar lógica de salvar.');
-    };
+    
+    useEffect(() => {
+        // Verifica se há dados salvos para a Etapa 2 no contexto
+        if (dadosEtapa2 && dadosEtapa2.pacienteId && pacientes.length > 0) {
+            // Encontra o paciente correspondente ao ID armazenado
+            const pacienteEncontrado = pacientes.find(p => p.id === dadosEtapa2.pacienteId);
+            if (pacienteEncontrado) {
+                setPacienteSelecionado(pacienteEncontrado);
+                // Atualiza os campos do formulário com os dados do paciente
+                setNomeCompleto(pacienteEncontrado.nomecompleto);
+                setDataDeNascimento(formatarDataISO(pacienteEncontrado.datadenascimento));
+                setCPF(pacienteEncontrado.CPF);
+                setTelefone(pacienteEncontrado.telefone);
+                setObservacao(pacienteEncontrado.observacao);
+                setVAD(pacienteEncontrado.VAD);
+                setAlergia(pacienteEncontrado.alergia);
+                setAlergiaLatex(pacienteEncontrado.alergiaLatex);
+            }
+        }
+    }, [dadosEtapa2, pacientes]);
+    
 
-        // Continuação do componente Etapa2Agendamento
 
         return (
             <ScrollView style={styles.scrollView}>
@@ -206,11 +286,9 @@ const Etapa2Agendamento = () => {
                     )}
     
                     <View style={styles.buttonContainer}>
-                        {isCreatingNewPaciente && (
-                            <AppButton title="Salvar Paciente" onPress={salvarNovoPaciente} />
-                        )}
-                        <AppButton title="Salvar" onPress={salvarAgendamento} />
-                        <AppButton title="Cancelar" onPress={() => navigation.goBack()} />
+                        <AppButton title="Etapa Anterior" onPress={irParaEtapaAnterior} />
+                        <AppButton title="Cancelar" onPress={cancelarAgendamento} style={styles.cancelButton} />
+                        <AppButton title="Próxima Etapa" onPress={salvarEtapa2} />
                     </View>
                 </View>
             </ScrollView>
@@ -283,6 +361,13 @@ const Etapa2Agendamento = () => {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: 20,
+        },
+        cancelButton: {
+            backgroundColor: '#e57373', // Um tom de vermelho claro
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderRadius: 20
+            ,
         },
     });
     

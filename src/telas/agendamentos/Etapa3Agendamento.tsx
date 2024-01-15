@@ -1,18 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AppButton from '../../componentes/Botões/AppButton';
 import ModalCheckBox from '../../componentes/models/ModalCheckBox';
 import ModalModelo from '../../componentes/models/ModalModelo';
 import * as ProcedimentoService from '../../services/ProcedimentoService';
 import * as ConvenioService from '../../services/ConvenioService';
+import { DadosEtapa3, useAgendamento } from '../../context/AgendamentoContext';
+
+
+interface Etapa3Props {
+    irParaProximaEtapa: () => void;
+    irParaEtapaAnterior: () => void;
+}
+
+
 
 interface Plano {
     id: number;
     nome: string;
 }
 
-const Etapa3Agendamento = () => {
+const Etapa3Agendamento: React.FC<Etapa3Props> = ({ irParaProximaEtapa, irParaEtapaAnterior }) => {
     const navigation = useNavigation();
     const [procedimentos, setProcedimentos] = useState<any[]>([]);
     const [convenios, setConvenios] = useState<any[]>([]);
@@ -25,7 +34,63 @@ const Etapa3Agendamento = () => {
     const [mostrarModalProcedimentos, setMostrarModalProcedimentos] = useState(false);
     const [mostrarModalConvenios, setMostrarModalConvenios] = useState(false);
     const [mostrarModalPlano, setMostrarModalPlano] = useState(false);
+    const { dadosEtapa2, dadosEtapa3, salvarDadosEtapa3} = useAgendamento();
+    const { limparDadosAgendamento } = useAgendamento();
 
+    const cancelarAgendamento = () => {
+        Alert.alert(
+            "Cancelar Agendamento",
+            "Tem certeza de que deseja cancelar o agendamento?",
+            [
+                {
+                    text: "Não",
+                    style: "cancel"
+                },
+                { 
+                    text: "Sim", 
+                    onPress: () => {
+                        limparDadosAgendamento();
+                        navigation.goBack(); // Ou navegue para a tela desejada
+                    }
+                }
+            ]
+        );
+    };
+
+
+    useEffect(() => {
+        // Verifica se há dados salvos para a Etapa 3 no contexto
+        if (dadosEtapa3) {
+            // Atualiza os estados locais com os dados salvos
+            setProcedimentosSelecionados(dadosEtapa3.procedimentosSelecionados);
+            setConveniosSelecionados(dadosEtapa3.conveniosSelecionados);
+            setLateralidade(dadosEtapa3.lateralidade);
+            setMatricula(dadosEtapa3.matricula);
+    
+            // Para o plano, você precisa encontrar o plano correspondente pelo ID
+            const planoEncontrado = planos.find(plano => plano.id === dadosEtapa3.planoId);
+            if (planoEncontrado) {
+                setPlanoSelecionado(planoEncontrado);
+            }
+        }
+    }, [dadosEtapa3, planos]);
+    
+    
+    
+
+const salvarEtapa3 = () => {
+    const dadosEtapa3: DadosEtapa3 = {
+        procedimentosSelecionados,
+        conveniosSelecionados,
+        lateralidade,
+        planoId: planoSelecionado?.id || null,
+        matricula
+        // Adicione mais campos conforme necessário
+    };
+
+    salvarDadosEtapa3(dadosEtapa3);
+    irParaProximaEtapa(); // Ou navegue para a próxima etapa conforme necessário
+};
 
     useEffect(() => {
         ProcedimentoService.obterProcedimentos().then(response => {
@@ -124,23 +189,26 @@ const Etapa3Agendamento = () => {
                         title="Selecione os Procedimentos"
                     />
     
-                    <View style={styles.lateralidadeContainer}>
-                        <Text style={styles.label}>Lateralidade</Text>
-                        <View style={styles.lateralidadeOpcoes}>
-                            {['Direita', 'Esquerda', 'Bilateral', 'Não se Aplica'].map((opcao) => (
-                                <TouchableOpacity
-                                    key={opcao}
-                                    style={[
-                                        styles.lateralidadeOpcao,
-                                        lateralidade === opcao && styles.lateralidadeOpcaoSelecionada
-                                    ]}
-                                    onPress={() => selecionarLateralidade(opcao)}
-                                >
-                                    <Text style={styles.lateralidadeTexto}>{opcao}</Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
-                    </View>
+    <View style={styles.lateralidadeOpcoes}>
+    {['Direita', 'Esquerda', 'Bilateral', 'Não se Aplica'].map((opcao) => (
+        <TouchableOpacity
+            key={opcao}
+            style={[
+                styles.lateralidadeOpcao,
+                lateralidade === opcao && styles.lateralidadeOpcaoSelecionada
+            ]}
+            onPress={() => selecionarLateralidade(opcao)}
+        >
+            <Text style={[
+                styles.lateralidadeTexto,
+                lateralidade === opcao && styles.lateralidadeTextoSelecionado
+            ]}>
+                {opcao}
+            </Text>
+        </TouchableOpacity>
+    ))}
+</View>
+
     
                     <Text style={styles.label}>Convênios</Text>
                     <TouchableOpacity 
@@ -188,8 +256,9 @@ const Etapa3Agendamento = () => {
                     />
     
                     <View style={styles.buttonContainer}>
-                        <AppButton title="Salvar" onPress={() => {}} />
-                        <AppButton title="Cancelar" onPress={() => navigation.goBack()} />
+                        <AppButton title="Etapa Anterior" onPress={irParaEtapaAnterior} />
+                        <AppButton title="Cancelar" onPress={cancelarAgendamento} style={styles.cancelButton} />
+                        <AppButton title="Próxima Etapa" onPress={salvarEtapa3} />
                     </View>
                 </View>
             </ScrollView>
@@ -264,6 +333,7 @@ const Etapa3Agendamento = () => {
             height: 12,
             borderRadius: 5,
             padding: 2,
+            alignItems: 'center',
         },
         itemBoxRemoveText: {
             color: 'white',
@@ -271,7 +341,7 @@ const Etapa3Agendamento = () => {
         },
         buttonContainer: {
             flexDirection: 'row',
-            justifyContent: 'center',
+            justifyContent: 'space-around',
             alignItems: 'center',
             marginTop: 10,
         },
@@ -292,16 +362,29 @@ const Etapa3Agendamento = () => {
             width: '48%', // Aproximadamente metade da largura para duas colunas
         },
         lateralidadeOpcaoSelecionada: {
-            backgroundColor: '#e1e1e1',
+            backgroundColor: 'black',
         },
         lateralidadeTexto: {
             textAlign: 'center',
+            color: 'black',
+            alignItems: 'center'
+        },
+        lateralidadeTextoSelecionado: {
+            color: 'white',
+            fontWeight: 'bold',
+            alignItems: 'center'
         },
         input: {
             height: 40,
             borderColor: 'gray',
             borderWidth: 1,
             padding: 10,
+        },
+        cancelButton: {
+            backgroundColor: '#e57373', // Cor vermelha clara para o botão cancelar
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderRadius: 20,
         },
     });
     

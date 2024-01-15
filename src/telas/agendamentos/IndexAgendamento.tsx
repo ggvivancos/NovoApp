@@ -11,6 +11,8 @@ import Paginacao from '../../componentes/paginacao/Paginacao';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import CabecalhoAgendamentos from './componentes/CabecalhoAgendamentos';
 
+
+
 type StatusAgendamento = {
     nome: string;
     cor: string;
@@ -55,7 +57,7 @@ type Agendamento = {
         nome: string;
     }[];
     Cirurgiaos: {
-        nomecompleto: string;
+        nome: string;
     }[];
     // Adicione outros relacionamentos conforme necessário
 };
@@ -145,6 +147,10 @@ const IndexAgendamento = () => {
             ]
         );
     };
+
+     
+
+    
 
     const deletarAgendamentoConfirmado = async (id: number) => {
         try {
@@ -255,10 +261,16 @@ const IndexAgendamento = () => {
             <View style={styles.cellHora}><Text>{formatarHoraInicio(agendamento.horainicio)}</Text></View>
             <View style={styles.cellPaciente}><Text>{agendamento.Paciente.nomecompleto}</Text></View>
             <View style={styles.cellProcedimento}><Text>{agendamento.Procedimentos.map(p => p.nome).join(', ')}</Text></View>
-            <View style={styles.cellCirurgiao}><Text>{agendamento.Cirurgiaos.map(c => c.nomecompleto).join(', ')}</Text></View>
+            <View style={styles.cellCirurgiao}>
+    <Text>
+        {agendamento.Cirurgiaos.length > 0 
+            ? agendamento.Cirurgiaos.map(c => c.nome).join(', ') 
+            : 'Não informado'}
+    </Text>
+</View>
             <AcoesBotoes
-                onEditarPress={() => (navigation as any).navigate('EditarAgendamento', { agendamentoId: agendamento.id })}
-                onDeletarPress={() => handleDeletarAgendamento(agendamento.id)}
+        onEditarPress={() => (navigation as any).navigate('NovoAgendamento', { agendamentoId: agendamento.id })}
+         onDeletarPress={() => handleDeletarAgendamento(agendamento.id)}
             />
         </TouchableOpacity>
         {expandedRowId === agendamento.id && renderExpandedRow(agendamento)}

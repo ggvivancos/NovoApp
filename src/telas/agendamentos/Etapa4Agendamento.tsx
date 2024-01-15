@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity, TextInput, Switch } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, TouchableOpacity, TextInput, Switch, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AppButton from '../../componentes/Botões/AppButton';
 import ModalModelo from '../../componentes/models/ModalModelo';
 import * as GrupoDeAnestesiaService from '../../services/GrupoDeAnestesiaService';
 import * as AnestesistaService from '../../services/AnestesistaService';
+import { DadosEtapa4, useAgendamento } from '../../context/AgendamentoContext';
 
-const Etapa4Agendamento = () => {
+
+interface Etapa4Props {
+    irParaProximaEtapa: () => void;
+    irParaEtapaAnterior: () => void;
+}
+
+const Etapa4Agendamento: React.FC<Etapa4Props> = ({ irParaProximaEtapa, irParaEtapaAnterior }) => {
     const navigation = useNavigation();
     const [gruposDeAnestesia, setGruposDeAnestesia] = useState<any[]>([]);
     const [anestesistas, setAnestesistas] = useState<any[]>([]);
@@ -17,17 +24,117 @@ const Etapa4Agendamento = () => {
     const [aviso, setAviso] = useState('');
     const [leito, setLeito] = useState('');
     const [prontuario, setProntuario] = useState('');
-    const [pacote, setPacote] = useState('');
+    const [pacote, setPacote] = useState(false); // Alterado para ser um estado booleano
     const [apa, setApa] = useState(false);
-    const [vad, setVad] = useState(false);
-    const [uti, setUti] = useState(false);
-    const [hemoderivados, setHemoderivados] = useState(false);
+    const [utiPedida, setUtiPedida] = useState(false);
+    const [utiConfirmada, setUtiConfirmada] = useState(false);
+    const [hemoderivadosPedido, setHemoderivadosPedido] = useState(false);
+    const [hemoderivadosConfirmado, setHemoderivadosConfirmado] = useState(false);
+    const { limparDadosAgendamento } = useAgendamento();
+
+    const cancelarAgendamento = () => {
+        Alert.alert(
+            "Cancelar Agendamento",
+            "Tem certeza de que deseja cancelar o agendamento?",
+            [
+                {
+                    text: "Não",
+                    style: "cancel"
+                },
+                { 
+                    text: "Sim", 
+                    onPress: () => {
+                        limparDadosAgendamento();
+                        navigation.goBack(); // Ou navegue para a tela desejada
+                    }
+                }
+            ]
+        );
+    };
+    const { dadosEtapa1, dadosEtapa2, dadosEtapa3, dadosEtapa4, salvarDadosEtapa4 } = useAgendamento();
+
+    const salvarEtapa4 = () => {
+        const camposObrigatoriosPreenchidos = grupoDeAnestesiaSelecionado && anestesistaSelecionado && aviso && leito && prontuario;
+    
+        if (!camposObrigatoriosPreenchidos) {
+            Alert.alert("Erro", "Por favor, preencha todos os campos obrigatórios.");
+            return;
+        }
+        
+        const dadosEtapa4 = {
+            grupoDeAnestesiaSelecionado: grupoDeAnestesiaSelecionado?.id || null,
+            anestesistaSelecionado: anestesistaSelecionado?.id || null,
+            utiPedida,
+            utiConfirmada,
+            hemoderivadosPedido,
+            hemoderivadosConfirmado,
+            apa,
+            leito,
+            aviso,
+            prontuario,
+            pacote,
+        };
+    
+        console.log("Dados da Etapa 4:", dadosEtapa4);
+    
+        const dadosAgendamentoCompleto = {
+            ...dadosEtapa1,
+            ...dadosEtapa2,
+            ...dadosEtapa3,
+            ...dadosEtapa4
+        };
+
+        console.log("Dados do Agendamento Completo antes de salvar:", dadosAgendamentoCompleto);
+
+    
+        salvarDadosEtapa4(dadosAgendamentoCompleto); // Salve os dados
+        irParaProximaEtapa(); // Navegue para a próxima etapa
+    };
+    
 
     interface SwitchSelectorProps {
         label: string;
         value: boolean;
         onValueChange: (value: boolean) => void;
     }
+
+
+    useEffect(() => {
+        if (dadosEtapa4) {
+            // Forçar atualização dos estados dos switches
+            setUtiPedida(!dadosEtapa4.utiPedida);
+            setUtiConfirmada(!dadosEtapa4.utiConfirmada);
+            setHemoderivadosPedido(!dadosEtapa4.hemoderivadosPedido);
+            setHemoderivadosConfirmado(!dadosEtapa4.hemoderivadosConfirmado);
+            setApa(!dadosEtapa4.apa);
+            setPacote(!dadosEtapa4.pacote);
+    
+            // Definir com os valores salvos
+            setUtiPedida(dadosEtapa4.utiPedida);
+            setUtiConfirmada(dadosEtapa4.utiConfirmada);
+            setHemoderivadosPedido(dadosEtapa4.hemoderivadosPedido);
+            setHemoderivadosConfirmado(dadosEtapa4.hemoderivadosConfirmado);
+            setApa(dadosEtapa4.apa);
+            setPacote(dadosEtapa4.pacote);
+    
+            // Atualiza os demais estados locais com os dados salvos
+            const grupoSelecionado = gruposDeAnestesia.find(grupo => grupo.id === dadosEtapa4.grupoDeAnestesiaSelecionado);
+            if (grupoSelecionado) {
+                setGrupoDeAnestesiaSelecionado(grupoSelecionado);
+            }
+    
+            const anestesistaEncontrado = anestesistas.find(anestesista => anestesista.id === dadosEtapa4.anestesistaSelecionado);
+            if (anestesistaEncontrado) {
+                setAnestesistaSelecionado(anestesistaEncontrado);
+            }
+    
+            setAviso(dadosEtapa4.aviso);
+            setLeito(dadosEtapa4.leito);
+            setProntuario(dadosEtapa4.prontuario);
+        }
+    }, [dadosEtapa4, gruposDeAnestesia, anestesistas]);
+    
+    
 
     useEffect(() => {
         GrupoDeAnestesiaService.obterGruposDeAnestesia().then(response => {
@@ -140,28 +247,29 @@ const Etapa4Agendamento = () => {
                         />
                     </View>
 
-                    <View style={styles.inputHalf}>
-                        <Text style={styles.label}>Pacote</Text>
-                        <TextInput
-                            style={styles.input}
-                            onChangeText={setPacote}
-                            value={pacote}
-                            placeholder="Digite o pacote"
-                        />
-                    </View>
+                   
                 </View>
 
-                
+                <SwitchSelector label="Pacote" value={pacote} onValueChange={setPacote} />
                 <SwitchSelector label="APA" value={apa} onValueChange={setApa} />
-                <SwitchSelector label="UTI (Pedido de Reserva)" value={vad} onValueChange={setVad} />
-                <SwitchSelector label="UTI (Pedido Confirmado)" value={uti} onValueChange={setUti} />
-                <SwitchSelector label="HEMODERIVADOS (Necessidade de Reserva)" value={hemoderivados} onValueChange={setHemoderivados} />
-                <SwitchSelector label="HEMODERIVADOS (Reserva Confirmada)" value={hemoderivados} onValueChange={setHemoderivados} />
+                <SwitchSelector 
+    label="UTI (Pedido de Reserva)" 
+    value={utiPedida} 
+    onValueChange={setUtiPedida} 
+/>
+<SwitchSelector 
+    label="UTI (Pedido Confirmado)" 
+    value={utiConfirmada} 
+    onValueChange={setUtiConfirmada} 
+/>
+                <SwitchSelector label="HEMODERIVADOS (Necessidade de Reserva)" value={hemoderivadosPedido} onValueChange={setHemoderivadosPedido} />
+                <SwitchSelector label="HEMODERIVADOS (Reserva Confirmada)" value={hemoderivadosConfirmado} onValueChange={setHemoderivadosConfirmado} />
 
             
                 <View style={styles.buttonContainer}>
-                    <AppButton title="Continuar para a próxima etapa" onPress={() => {/* Navegação para a próxima etapa */}} />
-                    <AppButton title="Voltar" onPress={() => navigation.goBack()} />
+                    <AppButton title="Etapa Anterior" onPress={irParaEtapaAnterior} />
+                    <AppButton title="Cancelar" onPress={cancelarAgendamento} style={styles.cancelButton} />
+                    <AppButton title="Próxima Etapa" onPress={salvarEtapa4} />
                 </View>
 
             </View>
@@ -236,6 +344,12 @@ const Etapa4Agendamento = () => {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: 20,
+        },
+        cancelButton: {
+            backgroundColor: '#e57373', // Um tom de vermelho claro
+            paddingHorizontal: 10,
+            paddingVertical: 5,
+            borderRadius: 20            ,
         },
     });
     

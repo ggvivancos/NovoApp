@@ -5,34 +5,56 @@ const URL_AGENDAMENTO = '/agendamentos';
 
 // Atualize a interface para refletir a nova estrutura de dados
 interface StatusData {
-    nome: string;
-    cor: string;
+    id: number;
+    
+    // outros campos...
 }
+
+interface OPMEData {
+    id: number;
+    descricao: string;
+    // Outros campos que você possa precisar
+}
+
+interface FornecedorData {
+    id: number;
+    nome: string;
+    // Outros campos que você possa precisar
+}
+
+
 
 interface AgendamentoData {
     pacienteId: number;
     anestesistaId?: number;
     grupodeanestesiaId?: number;
     hospitalId: number;
-    setorId?: number;
-    status: StatusData; // Atualizado para ser um objeto
+    setorId?: number | null;
+    statusId: number;
     SaladeCirurgiaId?: number;
     horainicio: string;
     duracao: string;
-    uti: boolean;
+    utiPedida: boolean;
+    utiConfirmada: boolean;
+    hemoderivadosPedido: boolean;
+    hemoderivadosConfirmado: boolean;
     apa: boolean;
     leito: string;
-    observacao: string;
-    aviso: string;
-    prontuario: string;
+    observacao?: string;
+    aviso?: string;
+    prontuario?: string;
     lateralidade: string;
-    pacote: boolean;
+    pacote?: boolean;
     datadacirurgia: string;
     procedimentos: number[];
     cirurgioes: number[];
     convenios: number[];
-    // Adicione outros campos conforme necessário
+    recursosComplementaresId?: number[];
+    opmeId?: number[];
+    fornecedoresId?: number[];
 }
+    // Adicione outros campos conforme necessário
+
 
 // As funções abaixo permanecem inalteradas, pois elas lidam com a interface AgendamentoData
 export const criarAgendamento = (data: AgendamentoData) => {
