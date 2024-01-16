@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Button, Share, ScrollView } from 'react-native';
+import React, { useEffect, useState, useContext } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import * as CirurgiaoService from '../../services/CirurgiaoService';
 import * as AnestesistaService from '../../services/AnestesistaService';
 import * as ProcedimentoService from '../../services/ProcedimentoService';
@@ -9,14 +9,25 @@ import * as OPMEService from '../../services/OPMEService';
 import * as FornecedorService from '../../services/FornecedorService';
 import AppButton from '../../componentes/Botões/AppButton';
 import { useNavigation } from '@react-navigation/native';
+import AgendamentoContext from '../../context/AgendamentoContext';
+import * as AgendamentoService from '../../services/AgendamentoService';
 
-interface Etapa6Props {
-    dadosAgendamento: any; // Substitua 'any' pelo tipo apropriado, se necessário
-    finalizarAgendamento: () => void;
-    irParaEtapaAnterior: () => void;
+interface DadosAgendamento {
+    id: number;
+    cirurgioes: number[];
+    anestesistaId: number;
+    procedimentos: number[];
+    convenios: number[];
+    recursosComplementaresId: number[];
+    opmeId: number[];
+    fornecedoresId: number[];
+    // Adicione outros campos conforme necessário
+    Paciente: { nomecompleto: string };
+    GrupoDeAnestesia: { nome: string };
+    // ... outros campos conforme necessário
 }
 
-const Etapa6Agendamento = ({ dadosAgendamento }) => {
+const Etapa6Agendamento = ({ dadosAgendamento }: { dadosAgendamento: DadosAgendamento }) => {
     const [nomesCirurgioes, setNomesCirurgioes] = useState<string[]>([]);
     const [nomeAnestesista, setNomeAnestesista] = useState('');
     const [nomesProcedimentos, setNomesProcedimentos] = useState<string[]>([]);
@@ -25,143 +36,141 @@ const Etapa6Agendamento = ({ dadosAgendamento }) => {
     const [descricoesOpme, setDescricoesOpme] = useState<string[]>([]);
     const [nomesFornecedores, setNomesFornecedores] = useState<string[]>([]);
     const navigation = useNavigation();
-    
-    const voltarParaEdicao = () => {
-        if (dadosAgendamento && dadosAgendamento.id) {
-            (navigation as any).navigate('NovoAgendamento', { agendamentoId: dadosAgendamento.id });
-        } else {
-            console.error('Erro: ID do agendamento não encontrado.');
+    const { dadosEtapa1, dadosEtapa2, dadosEtapa3, dadosEtapa4, dadosEtapa5, limparDadosAgendamento } = useContext(AgendamentoContext);
+
+    const finalizarAgendamento = async () => {
+        try {
+            const dadosCompletos = {
+                ...dadosEtapa1,
+                ...dadosEtapa2,
+                ...dadosEtapa3,
+                ...dadosEtapa4,
+                ...dadosEtapa5,
+                cirurgioes: dadosAgendamento.cirurgioes,
+            anestesistaId: dadosAgendamento.anestesistaId,
+            procedimentos: dadosAgendamento.procedimentos,
+            convenios: dadosAgendamento.convenios,
+            recursosComplementaresId: dadosAgendamento.recursosComplementaresId,
+            opmeId: dadosAgendamento.opmeId,
+            fornecedoresId: dadosAgendamento.fornecedoresId,
+            horainicio: dadosEtapa1?.horarioInicio || '',
+            datadacirurgia: dadosEtapa1?.dataSelecionada || '',
+            // Adicione outros campos conforme necessário
+            statusId: dadosEtapa1?.statusId || 0,
+            hospitalId: dadosEtapa1?.hospitalId || 0,
+            setorId: dadosEtapa1?.setorId || null,
+            salaDeCirurgiaId: dadosEtapa1?.salaDeCirurgiaId || null,
+            pacienteId: dadosEtapa2?.pacienteId || 0,
+            lateralidade: dadosEtapa3?.lateralidade || '',
+            planoId: dadosEtapa3?.planoId || null,
+            matricula: dadosEtapa3?.matricula || '',
+            utiPedida: dadosEtapa4?.utiPedida || false,
+            utiConfirmada: dadosEtapa4?.utiConfirmada || false,
+            hemoderivadosPedido: dadosEtapa4?.hemoderivadosPedido || false,
+            hemoderivadosConfirmado: dadosEtapa4?.hemoderivadosConfirmado || false,
+            apa: dadosEtapa4?.apa || false,
+leito: dadosEtapa4?.leito || '',
+aviso: dadosEtapa4?.aviso || '',
+prontuario: dadosEtapa4?.prontuario || '',
+pacote: dadosEtapa4?.pacote || false,
+grupoDeAnestesiaSelecionado: dadosEtapa4?.grupoDeAnestesiaSelecionado || null,
+materiaisEspeciais: dadosEtapa5?.materiaisEspeciais || [],
+// Outros campos de DadosEtapa5 conforme necessário
+};
+
+            await AgendamentoService.criarAgendamento(dadosCompletos);
+            Alert.alert('Sucesso', 'Agendamento salvo com sucesso!');
+            limparDadosAgendamento();
+            navigation.navigate('TelaDeSucesso'); // Substitua pela tela desejada
+        } catch (error) {
+        Alert.alert('Falha ao salvar o agendamento', error instanceof Error ? error.message : String(error));
         }
-    };
-    const handleBack = () => {
-        navigation.goBack();
-    };
-    // Adicione mais estados conforme necessário
-
-    useEffect(() => {
-
-        console.log("Dados recebidos na Etapa6:", dadosAgendamento);
-
-
+        };
+        
         const buscarNomesCirurgioes = async () => {
-            if (dadosAgendamento.cirurgioes && dadosAgendamento.cirurgioes.length > 0) {
-                const nomes = await Promise.all(
-                    dadosAgendamento.cirurgioes.map(async (id) => {
-                        const cirurgiao = await CirurgiaoService.obterCirurgiaoPorId(id.toString());
-                        return cirurgiao.nome;
-                    })
-                );
-                setNomesCirurgioes(nomes);
-            }
+            const nomes = await Promise.all(
+                dadosAgendamento.cirurgioes.map(async (id) => {
+                    const cirurgiao = await CirurgiaoService.obterCirurgiaoPorId(String(id));
+                    return cirurgiao.nome;
+                })
+            );
+            setNomesCirurgioes(nomes);
         };
-    
+        
         const buscarNomeAnestesista = async () => {
-            if (dadosAgendamento.anestesistaId) {
-                const anestesista = await AnestesistaService.obterAnestesistaPorId(dadosAgendamento.anestesistaId.toString());
-                setNomeAnestesista(anestesista.nomecompleto);
-            }
+            const anestesista = await AnestesistaService.obterAnestesistaPorId(String(dadosAgendamento.anestesistaId));
+            setNomeAnestesista(anestesista.nomecompleto);
         };
-
+        
         const buscarNomesProcedimentos = async () => {
-            if (dadosAgendamento.procedimentos && dadosAgendamento.procedimentos.length > 0) {
-                const nomes = await Promise.all(
-                    dadosAgendamento.procedimentos.map(async (
-    id) => {
-    const procedimento = await ProcedimentoService.obterProcedimentoPorId(id.toString());
-    return procedimento.nome;
-    })
-    );
-    setNomesProcedimentos(nomes);
-    }
-    };
-
-    const buscarNomesConvenios = async () => {
-        if (dadosAgendamento.convenios && dadosAgendamento.convenios.length > 0) {
+            const nomes = await Promise.all(
+                dadosAgendamento.procedimentos.map(async (id) => {
+                    const procedimento = await ProcedimentoService.obterProcedimentoPorId(String(id));
+                    return procedimento.nome;
+                })
+            );
+            setNomesProcedimentos(nomes);
+        };
+        
+        const buscarNomesConvenios = async () => {
             const nomes = await Promise.all(
                 dadosAgendamento.convenios.map(async (id) => {
-                    const convenio = await ConvenioService.obterConvenioPorId(id.toString());
+                    const convenio = await ConvenioService.obterConvenioPorId(String(id));
                     return convenio.nome;
                 })
             );
             setNomesConvenios(nomes);
-        }
-    };
-    
-    const buscarNomesRecursosComplementares = async () => {
-        if (dadosAgendamento.recursosComplementaresId && dadosAgendamento.recursosComplementaresId.length > 0) {
+        };
+        
+        const buscarNomesRecursosComplementares = async () => {
             const nomes = await Promise.all(
                 dadosAgendamento.recursosComplementaresId.map(async (id) => {
-                    const recurso = await RecursoComplementarService.obterRecursoComplementarPorId(id.toString());
+                    const recurso = await RecursoComplementarService.obterRecursoComplementarPorId(String(id));
                     return recurso.nome;
                 })
             );
             setNomesRecursosComplementares(nomes);
-        }
-    };
-    
-    const buscarDescricoesOpme = async () => {
-        if (dadosAgendamento.opmeId && dadosAgendamento.opmeId.length > 0) {
+        };
+        
+        const buscarDescricoesOpme = async () => {
             const descricoes = await Promise.all(
                 dadosAgendamento.opmeId.map(async (id) => {
-                    const opme = await OPMEService.obterOPMEPorId(id.toString());
+                    const opme = await OPMEService.obterOPMEPorId(String(id));
                     return opme.descricao;
                 })
             );
             setDescricoesOpme(descricoes);
-        }
-    };
-    
-    const buscarNomesFornecedores = async () => {
-        if (dadosAgendamento.fornecedoresId && dadosAgendamento.fornecedoresId.length > 0) {
+        };
+        
+        const buscarNomesFornecedores = async () => {
             const nomes = await Promise.all(
                 dadosAgendamento.fornecedoresId.map(async (id) => {
-                    const fornecedor = await FornecedorService.obterFornecedorPorId(id.toString());
+                    const fornecedor = await FornecedorService.obterFornecedorPorId(String(id));
                     return fornecedor.nome;
                 })
             );
-           
-    setNomesFornecedores(nomes);
-    }
-    };
-        // Chame as funções de busca
-        buscarNomesCirurgioes();
-        buscarNomeAnestesista();
-        buscarNomesProcedimentos();
-        buscarNomesConvenios();
-        buscarNomesRecursosComplementares();
-        buscarDescricoesOpme();
-        buscarNomesFornecedores();
+            setNomesFornecedores(nomes);
+        };
+        
+        useEffect(() => {
+            buscarNomesCirurgioes();
+            buscarNomeAnestesista();
+            buscarNomesProcedimentos();
+            buscarNomesConvenios();
+            buscarNomesRecursosComplementares();
+            buscarDescricoesOpme();
+            buscarNomesFornecedores();
         }, [dadosAgendamento]);
         
-      
-    // Implementação das funções voltarParaEdicao e compartilharAgendamento
-    
-
-    const compartilharAgendamento = async () => {
-        try {
-            const message = `Detalhes do Agendamento:\nData da Cirurgia: ${formatarData(dadosAgendamento.datadacirurgia)}\n...`; // Adicione mais detalhes conforme necessário
-            await Share.share({
-                message,
-            });
-        } catch (error) {
-            alert(error.message);
-        }
-    };
-
-    const formatarData = (dataString) => {
-        const data = new Date(dataString);
-        return isNaN(data.getTime()) ? 'Data inválida' : data.toLocaleDateString();
-    };
-
-
-   return (
+            // Continuação da função Etapa6Agendamento
+    return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Detalhes do Agendamento</Text>
 
             <View style={styles.card}>
-                <DetailRow label="Paciente" value={dadosAgendamento.Paciente?.nomecompleto} />
+                <DetailRow label="Paciente" value={dadosAgendamento.Paciente.nomecompleto} />
                 <DetailRow label="Anestesista" value={nomeAnestesista} />
-                <DetailRow label="Grupo de Anestesia" value={dadosAgendamento.GrupoDeAnestesia?.nome} />
+                <DetailRow label="Grupo de Anestesia" value={dadosAgendamento.GrupoDeAnestesia.nome} />
                 <DetailRow label="Cirurgiões" value={nomesCirurgioes.join(', ')} />
                 <DetailRow label="Procedimentos" value={nomesProcedimentos.join(', ')} />
                 <DetailRow label="Convênios" value={nomesConvenios.join(', ')} />
@@ -172,20 +181,23 @@ const Etapa6Agendamento = ({ dadosAgendamento }) => {
             </View>
 
             <View style={styles.buttonGroup}>
-                <AppButton title="Editar" onPress={voltarParaEdicao} />
-                <AppButton title="Finalizar" onPress={handleBack} />
+                <AppButton title="Editar" onPress={() => navigation.goBack()} />
+                <AppButton title="Salvar e Finalizar" onPress={finalizarAgendamento} />
             </View>
         </ScrollView>
     );
 };
 
-const DetailRow = ({ label, value }) => (
+// Componente auxiliar para renderizar cada linha de detalhe
+const DetailRow = ({ label, value }: { label: string, value: string | undefined }) => (
     <View style={styles.detailRow}>
         <Text style={styles.detailLabel}>{label}:</Text>
         <Text style={styles.detailValue}>{value || 'Não informado'}</Text>
     </View>
 );
 
+// Estilos do componente
+// Estilos do componente
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -193,7 +205,7 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     title: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#343a40',
         marginBottom: 20,
@@ -228,7 +240,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
     },
-    // Outros estilos conforme necessário
+    // Adicione outros estilos conforme necessário
 });
 
 export default Etapa6Agendamento;
+

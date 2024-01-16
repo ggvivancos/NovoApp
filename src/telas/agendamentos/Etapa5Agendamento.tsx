@@ -8,6 +8,8 @@ import * as FornecedorService from '../../services/FornecedorService';
 import { useAgendamento } from '../../context/AgendamentoContext';
 import * as RecursoComplementarService from '../../services/RecursoComplementarService';
 
+
+
 interface Etapa5Props {
     irParaProximaEtapa: () => void;
     irParaEtapaAnterior: () => void;
