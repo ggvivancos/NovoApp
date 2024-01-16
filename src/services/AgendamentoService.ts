@@ -24,7 +24,7 @@ interface FornecedorData {
 
 
 
-interface AgendamentoData {
+export interface AgendamentoData {
     pacienteId: number;
     anestesistaId?: number;
     grupodeanestesiaId?: number;

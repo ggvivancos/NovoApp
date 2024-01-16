@@ -17,7 +17,7 @@ import { useRoute } from '@react-navigation/native';
 
 const NovoAgendamento = () => {
     const [etapaAtual, setEtapaAtual] = useState(1);
-    const [dadosAgendamento, setDadosAgendamento] = useState({});
+    const [dadosAgendamento, setDadosAgendamento] = useState<DadosAgendamento>({} as DadosAgendamento);
     const route = useRoute();
     const params = route.params as any;
     const { carregarDadosAgendamento } = useAgendamento();
@@ -83,79 +83,7 @@ const NovoAgendamento = () => {
         }
     };
 
-    const finalizarAgendamento = () => {
-        
-        
-
-        console.log("Dados Etapa 1:", dadosEtapa1);
-        console.log("Dados Etapa 2:", dadosEtapa2);
-        console.log("Dados Etapa 3:", dadosEtapa3);
-        console.log("Dados Etapa 4:", dadosEtapa4);
-        console.log("Dados Etapa 5:", dadosEtapa5);
-
-
-        if (!dadosEtapa1 || !dadosEtapa2 || !dadosEtapa3 || !dadosEtapa4 || !dadosEtapa5) {
-            Alert.alert("Erro", "Dados incompletos para o agendamento.");
-            return;
-        }
-        
-        const sairDoAgendamento = () => {
-        limparDadosAgendamento();
-        };
-        // Compilando todos os dados das etapas em um objeto único
-        const dadosAgendamentoCompleto = {
-            pacienteId: dadosEtapa2?.pacienteId ?? 0,
-            anestesistaId: dadosEtapa4?.anestesistaSelecionado ?? 0, // Ajuste conforme a etapa correta
-            grupodeanestesiaId: dadosEtapa4?.grupoDeAnestesiaSelecionado ?? 0, // Ajuste conforme a etapa correta
-            horainicio: dadosEtapa1?.horarioInicio ?? '',
-            duracao: dadosEtapa1?.duracao ?? '',
-            utiPedida: dadosEtapa4?.utiPedida ?? false,
-            utiConfirmada: dadosEtapa4?.utiConfirmada ?? false,
-            hemoderivadosPedido: dadosEtapa4?.hemoderivadosPedido ?? false,
-            hemoderivadosConfirmado: dadosEtapa4?.hemoderivadosConfirmado ?? false,
-            apa: dadosEtapa4?.apa ?? false,
-            leito: dadosEtapa4?.leito ?? '',
-            aviso: dadosEtapa4?.aviso ?? '', // Verifique se está na etapa correta
-            prontuario: dadosEtapa4?.prontuario ?? '', // Verifique se está na etapa correta
-            lateralidade: dadosEtapa3?.lateralidade ?? '',
-            pacote: dadosEtapa4?.pacote ?? false,
-            datadacirurgia: dadosEtapa1?.dataSelecionada ?? '',
-            procedimentos: dadosEtapa3?.procedimentosSelecionados ?? [],
-            cirurgioes: dadosEtapa1?.cirurgioesSelecionados ?? [],
-            convenios: dadosEtapa3?.conveniosSelecionados ?? [],
-            recursosComplementaresId: dadosEtapa5?.materiaisEspeciais ?? [], // Verifique se está na etapa correta
-            opmeId: dadosEtapa5?.opmesSelecionadas ?? [], // Ajuste conforme a etapa correta
-            fornecedoresId: dadosEtapa5?.fornecedoresSelecionados ?? [], // Ajuste conforme a etapa correta
-            statusId: dadosEtapa1?.statusId ?? 1, // Usando o statusId da Etapa1
-            observacao: 'Nenhuma observação', // Substitua por um valor apropriado
-            hospitalId: dadosEtapa1?.hospitalId ?? 1, // Substitua por um valor apropriado
-            setorId: dadosEtapa1?.setorId ?? undefined,
-            salaDeCirurgiaId: dadosEtapa1?.salaDeCirurgiaId ?? null, // Substitua por um valor apropriado
-        };
-        
-        
-        setDadosAgendamento(dadosAgendamentoCompleto);
-
-        
-        setEtapaAtual(6);
-
-        AgendamentoService.criarAgendamento(dadosAgendamentoCompleto)
-            .then(response => {
-                console.log("Resposta do servidor:", response);
-
-                Alert.alert("Agendamento Finalizado", "Seu agendamento foi concluído com sucesso.");
-                limparDadosAgendamento(); // Limpa os dados após o sucesso
-
-
-                // Navegação opcional após a finalização
-                // navigation.navigate('TelaDeSucesso');
-            })
-            .catch(error => {
-                console.error("Erro ao criar agendamento:", error);
-                Alert.alert("Erro", "Não foi possível criar o agendamento. Tente novamente.");
-            });
-        };
-
+    
     const renderizarEtapa = () => {
         switch (etapaAtual) {
             
@@ -173,13 +101,12 @@ const NovoAgendamento = () => {
             case 5:
                 return <Etapa5Agendamento irParaProximaEtapa={irParaProximaEtapa} irParaEtapaAnterior={irParaEtapaAnterior} />;
                 case 6:
-                    return (
-                        <Etapa6Agendamento 
-                            dadosAgendamento={dadosAgendamento} 
-                            finalizarAgendamento={finalizarAgendamento}
-                            irParaEtapaAnterior={irParaEtapaAnterior}
-                        />
-                    );
+                return (
+                    <Etapa6Agendamento 
+                        dadosAgendamento={dadosAgendamento}
+                        irParaEtapaAnterior={irParaEtapaAnterior}
+                    />
+                );
             default:
                     return <Text>Etapa desconhecida</Text>;
         }

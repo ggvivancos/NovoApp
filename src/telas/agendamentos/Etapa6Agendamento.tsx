@@ -12,22 +12,43 @@ import { useNavigation } from '@react-navigation/native';
 import AgendamentoContext from '../../context/AgendamentoContext';
 import * as AgendamentoService from '../../services/AgendamentoService';
 
-interface DadosAgendamento {
-    id: number;
-    cirurgioes: number[];
-    anestesistaId: number;
-    procedimentos: number[];
-    convenios: number[];
-    recursosComplementaresId: number[];
-    opmeId: number[];
-    fornecedoresId: number[];
-    // Adicione outros campos conforme necessário
-    Paciente: { nomecompleto: string };
-    GrupoDeAnestesia: { nome: string };
-    // ... outros campos conforme necessário
+
+interface Etapa6Props {
+    dadosAgendamento: DadosAgendamento;
+    irParaEtapaAnterior: () => void;
 }
 
-const Etapa6Agendamento = ({ dadosAgendamento }: { dadosAgendamento: DadosAgendamento }) => {
+interface DadosAgendamento {
+    pacienteId: number;
+    anestesistaId?: number;
+    grupodeanestesiaId?: number;
+    hospitalId: number;
+    setorId?: number | null;
+    statusId: number;
+    SaladeCirurgiaId?: number;
+    horainicio: string;
+    duracao: string;
+    utiPedida: boolean;
+    utiConfirmada: boolean
+    hemoderivadosPedido: boolean;
+    hemoderivadosConfirmado: boolean;
+    apa: boolean;
+    leito: string;
+    observacao?: string;
+    aviso?: string;
+    prontuario?: string;
+    lateralidade: string;
+    pacote?: boolean;
+    datadacirurgia: string;
+    procedimentos: number[];
+    cirurgioes: number[];
+    convenios: number[];
+    recursosComplementaresId?: number[];
+    opmeId?: number[];
+    fornecedoresId?: number[];
+    };
+
+const Etapa6Agendamento = ({ irParaEtapaAnterior, dadosAgendamento }: { dadosAgendamento: DadosAgendamento }) => {
     const [nomesCirurgioes, setNomesCirurgioes] = useState<string[]>([]);
     const [nomeAnestesista, setNomeAnestesista] = useState('');
     const [nomesProcedimentos, setNomesProcedimentos] = useState<string[]>([]);
@@ -39,49 +60,11 @@ const Etapa6Agendamento = ({ dadosAgendamento }: { dadosAgendamento: DadosAgenda
     const { dadosEtapa1, dadosEtapa2, dadosEtapa3, dadosEtapa4, dadosEtapa5, limparDadosAgendamento } = useContext(AgendamentoContext);
 
     const finalizarAgendamento = async () => {
-        try {
-            const dadosCompletos = {
-                ...dadosEtapa1,
-                ...dadosEtapa2,
-                ...dadosEtapa3,
-                ...dadosEtapa4,
-                ...dadosEtapa5,
-                cirurgioes: dadosAgendamento.cirurgioes,
-            anestesistaId: dadosAgendamento.anestesistaId,
-            procedimentos: dadosAgendamento.procedimentos,
-            convenios: dadosAgendamento.convenios,
-            recursosComplementaresId: dadosAgendamento.recursosComplementaresId,
-            opmeId: dadosAgendamento.opmeId,
-            fornecedoresId: dadosAgendamento.fornecedoresId,
-            horainicio: dadosEtapa1?.horarioInicio || '',
-            datadacirurgia: dadosEtapa1?.dataSelecionada || '',
-            // Adicione outros campos conforme necessário
-            statusId: dadosEtapa1?.statusId || 0,
-            hospitalId: dadosEtapa1?.hospitalId || 0,
-            setorId: dadosEtapa1?.setorId || null,
-            salaDeCirurgiaId: dadosEtapa1?.salaDeCirurgiaId || null,
-            pacienteId: dadosEtapa2?.pacienteId || 0,
-            lateralidade: dadosEtapa3?.lateralidade || '',
-            planoId: dadosEtapa3?.planoId || null,
-            matricula: dadosEtapa3?.matricula || '',
-            utiPedida: dadosEtapa4?.utiPedida || false,
-            utiConfirmada: dadosEtapa4?.utiConfirmada || false,
-            hemoderivadosPedido: dadosEtapa4?.hemoderivadosPedido || false,
-            hemoderivadosConfirmado: dadosEtapa4?.hemoderivadosConfirmado || false,
-            apa: dadosEtapa4?.apa || false,
-leito: dadosEtapa4?.leito || '',
-aviso: dadosEtapa4?.aviso || '',
-prontuario: dadosEtapa4?.prontuario || '',
-pacote: dadosEtapa4?.pacote || false,
-grupoDeAnestesiaSelecionado: dadosEtapa4?.grupoDeAnestesiaSelecionado || null,
-materiaisEspeciais: dadosEtapa5?.materiaisEspeciais || [],
-// Outros campos de DadosEtapa5 conforme necessário
-};
-
-            await AgendamentoService.criarAgendamento(dadosCompletos);
-            Alert.alert('Sucesso', 'Agendamento salvo com sucesso!');
+        try {              
+            
+        await AgendamentoService.criarAgendamento(dadosAgendamento);
+        Alert.alert('Sucesso', 'Agendamento salvo com sucesso!');
             limparDadosAgendamento();
-            navigation.navigate('TelaDeSucesso'); // Substitua pela tela desejada
         } catch (error) {
         Alert.alert('Falha ao salvar o agendamento', error instanceof Error ? error.message : String(error));
         }
@@ -196,8 +179,7 @@ const DetailRow = ({ label, value }: { label: string, value: string | undefined 
     </View>
 );
 
-// Estilos do componente
-// Estilos do componente
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
