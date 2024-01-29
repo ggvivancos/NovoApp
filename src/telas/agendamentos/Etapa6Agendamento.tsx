@@ -7,10 +7,14 @@ import * as ConvenioService from '../../services/ConvenioService';
 import * as RecursoComplementarService from '../../services/RecursoComplementarService';
 import * as OPMEService from '../../services/OPMEService';
 import * as FornecedorService from '../../services/FornecedorService';
+import * as PacienteService from '../../services/PacienteService';
+import * as GrupoDeAnestesiaService from '../../services/GrupoDeAnestesiaService';
+
 import AppButton from '../../componentes/Botões/AppButton';
 import { useNavigation } from '@react-navigation/native';
 import AgendamentoContext from '../../context/AgendamentoContext';
 import * as AgendamentoService from '../../services/AgendamentoService';
+import { DadosAgendamento } from '../../types/types';
 
 
 interface Etapa6Props {
@@ -18,39 +22,15 @@ interface Etapa6Props {
     irParaEtapaAnterior: () => void;
 }
 
-interface DadosAgendamento {
-    pacienteId: number;
-    anestesistaId?: number;
-    grupodeanestesiaId?: number;
-    hospitalId: number;
-    setorId?: number | null;
-    statusId: number;
-    SaladeCirurgiaId?: number;
-    horainicio: string;
-    duracao: string;
-    utiPedida: boolean;
-    utiConfirmada: boolean
-    hemoderivadosPedido: boolean;
-    hemoderivadosConfirmado: boolean;
-    apa: boolean;
-    leito: string;
-    observacao?: string;
-    aviso?: string;
-    prontuario?: string;
-    lateralidade: string;
-    pacote?: boolean;
-    datadacirurgia: string;
-    procedimentos: number[];
-    cirurgioes: number[];
-    convenios: number[];
-    recursosComplementaresId?: number[];
-    opmeId?: number[];
-    fornecedoresId?: number[];
-    };
 
-const Etapa6Agendamento = ({ irParaEtapaAnterior, dadosAgendamento }: { dadosAgendamento: DadosAgendamento }) => {
+
+
+const Etapa6Agendamento: React.FC<Etapa6Props> = ({ irParaEtapaAnterior, dadosAgendamento }) => {
     const [nomesCirurgioes, setNomesCirurgioes] = useState<string[]>([]);
     const [nomeAnestesista, setNomeAnestesista] = useState('');
+    const [nomeGrupoDeAnestesia, setNomeGrupoDeAnestesia] = useState('');
+    const [nomePaciente, setNomePaciente] = useState('');
+
     const [nomesProcedimentos, setNomesProcedimentos] = useState<string[]>([]);
     const [nomesConvenios, setNomesConvenios] = useState<string[]>([]);
     const [nomesRecursosComplementares, setNomesRecursosComplementares] = useState<string[]>([]);
@@ -59,12 +39,16 @@ const Etapa6Agendamento = ({ irParaEtapaAnterior, dadosAgendamento }: { dadosAge
     const navigation = useNavigation();
     const { dadosEtapa1, dadosEtapa2, dadosEtapa3, dadosEtapa4, dadosEtapa5, limparDadosAgendamento } = useContext(AgendamentoContext);
 
+    console.log("Dados Agendamento no início da Etapa 6 teste:", dadosAgendamento);
+
+
     const finalizarAgendamento = async () => {
         try {              
             
         await AgendamentoService.criarAgendamento(dadosAgendamento);
         Alert.alert('Sucesso', 'Agendamento salvo com sucesso!');
             limparDadosAgendamento();
+            (navigation as any).navigate('IndexAgendamento'); 
         } catch (error) {
         Alert.alert('Falha ao salvar o agendamento', error instanceof Error ? error.message : String(error));
         }
@@ -106,36 +90,61 @@ const Etapa6Agendamento = ({ irParaEtapaAnterior, dadosAgendamento }: { dadosAge
         };
         
         const buscarNomesRecursosComplementares = async () => {
-            const nomes = await Promise.all(
-                dadosAgendamento.recursosComplementaresId.map(async (id) => {
-                    const recurso = await RecursoComplementarService.obterRecursoComplementarPorId(String(id));
-                    return recurso.nome;
-                })
-            );
-            setNomesRecursosComplementares(nomes);
+            if (dadosAgendamento.recursosComplementaresId) {
+                const nomes = await Promise.all(
+                    dadosAgendamento.recursosComplementaresId.map(async (id) => {
+                        const recurso = await RecursoComplementarService.obterRecursoComplementarPorId(String(id));
+                        return recurso.nome;
+                    })
+                );
+                setNomesRecursosComplementares(nomes);
+            }
         };
         
         const buscarDescricoesOpme = async () => {
-            const descricoes = await Promise.all(
-                dadosAgendamento.opmeId.map(async (id) => {
-                    const opme = await OPMEService.obterOPMEPorId(String(id));
-                    return opme.descricao;
-                })
-            );
-            setDescricoesOpme(descricoes);
+            if (dadosAgendamento.opmeId) {
+                const descricoes = await Promise.all(
+                    dadosAgendamento.opmeId.map(async (id) => {
+                        const opme = await OPMEService.obterOPMEPorId(String(id));
+                        return opme.descricao;
+                    })
+                );
+                setDescricoesOpme(descricoes);
+            }
         };
         
         const buscarNomesFornecedores = async () => {
-            const nomes = await Promise.all(
-                dadosAgendamento.fornecedoresId.map(async (id) => {
-                    const fornecedor = await FornecedorService.obterFornecedorPorId(String(id));
-                    return fornecedor.nome;
-                })
-            );
-            setNomesFornecedores(nomes);
+            if (dadosAgendamento.fornecedoresId) {
+                const nomes = await Promise.all(
+                    dadosAgendamento.fornecedoresId.map(async (id) => {
+                        const fornecedor = await FornecedorService.obterFornecedorPorId(String(id));
+                        return fornecedor.nome;
+                    })
+                );
+                setNomesFornecedores(nomes);
+                }
+        };
+
+        const buscarNomeGrupoDeAnestesia = async () => {
+            if (dadosAgendamento.grupodeanestesiaId) {
+                const grupoAnestesia = await GrupoDeAnestesiaService.obterGrupoDeAnestesiaPorId(dadosAgendamento.grupodeanestesiaId);
+                setNomeGrupoDeAnestesia(grupoAnestesia.nome);
+            }
+        };
+
+        const buscarNomePaciente = async () => {
+            if (dadosAgendamento.pacienteId) {
+                const paciente = await PacienteService.obterPacientePorId(String(dadosAgendamento.pacienteId));
+                setNomePaciente(paciente.nome);
+            }
         };
         
+        
         useEffect(() => {
+
+            console.log("Dados do Agendamento recebidos na Etapa 6 useeffect:", dadosAgendamento)
+
+
             buscarNomesCirurgioes();
             buscarNomeAnestesista();
             buscarNomesProcedimentos();
@@ -143,6 +152,8 @@ const Etapa6Agendamento = ({ irParaEtapaAnterior, dadosAgendamento }: { dadosAge
             buscarNomesRecursosComplementares();
             buscarDescricoesOpme();
             buscarNomesFornecedores();
+            buscarNomePaciente();
+            buscarNomeGrupoDeAnestesia();
         }, [dadosAgendamento]);
         
             // Continuação da função Etapa6Agendamento
@@ -151,9 +162,9 @@ const Etapa6Agendamento = ({ irParaEtapaAnterior, dadosAgendamento }: { dadosAge
             <Text style={styles.title}>Detalhes do Agendamento</Text>
 
             <View style={styles.card}>
-                <DetailRow label="Paciente" value={dadosAgendamento.Paciente.nomecompleto} />
+                <DetailRow label="Paciente" value={nomePaciente} />
                 <DetailRow label="Anestesista" value={nomeAnestesista} />
-                <DetailRow label="Grupo de Anestesia" value={dadosAgendamento.GrupoDeAnestesia.nome} />
+                <DetailRow label="Grupo de Anestesia" value={nomeGrupoDeAnestesia} />
                 <DetailRow label="Cirurgiões" value={nomesCirurgioes.join(', ')} />
                 <DetailRow label="Procedimentos" value={nomesProcedimentos.join(', ')} />
                 <DetailRow label="Convênios" value={nomesConvenios.join(', ')} />

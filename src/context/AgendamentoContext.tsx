@@ -1,52 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { DadosEtapa1, DadosEtapa2, DadosEtapa3, DadosEtapa4, DadosEtapa5 } from '../types/types';
 
 // Defina uma interface para os dados de cada etapa
-export interface DadosEtapa1 {
-    dataSelecionada: string;
-    horarioInicio: string;
-    duracao: string;
-    cirurgioesSelecionados: number[];
-    statusId: number;
-    hospitalId: number; // Novo campo
-    setorId: number | null; // Novo campo
-    salaDeCirurgiaId: number | null; // Novo campo
-}
 
-export interface DadosEtapa2 {
-    pacienteId: number;
-    // Outros campos da Etapa 2, se necessário
-}
-
-export interface DadosEtapa3 {
-    procedimentosSelecionados: number[];
-    conveniosSelecionados: number[];
-    lateralidade: string;
-    planoId: number | null;
-    matricula: string;
-    // Outros campos da Etapa 3, se necessário
-}
-
-export interface DadosEtapa4 {
-    utiPedida: boolean;
-    utiConfirmada: boolean;
-    hemoderivadosPedido: boolean;
-    hemoderivadosConfirmado: boolean;
-    apa: boolean;
-    leito: string;
-    aviso: string;
-    prontuario: string;
-    pacote: boolean;
-    grupoDeAnestesiaSelecionado: number | null;
-    anestesistaSelecionado: number | null;
-    // Outros campos da Etapa 4, se necessário
-}
-
-export interface DadosEtapa5 {
-    materiaisEspeciais: number[];
-   opmesSelecionadas: number[];
-    fornecedoresSelecionados: number[];
-    // Outros campos da Etapa 5, se necessário
-}
 
 // Crie o contexto com um valor padrão
 const AgendamentoContext = createContext<{
@@ -61,6 +17,8 @@ const AgendamentoContext = createContext<{
     dadosEtapa5: DadosEtapa5 | null;
     salvarDadosEtapa5: (dados: DadosEtapa5) => void;
     limparDadosAgendamento: () => void;
+    estaAvancando: boolean;
+    setEstaAvancando: (estaAvancando: boolean) => void;
     
     carregarDadosAgendamento: (dados: any) => void; // Adicione esta linha
 
@@ -70,8 +28,10 @@ const AgendamentoContext = createContext<{
     dadosEtapa3: null, salvarDadosEtapa3: () => {},
     dadosEtapa4: null, salvarDadosEtapa4: () => {},
     dadosEtapa5: null, salvarDadosEtapa5: () => {},
+    estaAvancando: true,
+    setEstaAvancando: (estaAvancando: boolean) => {},
     limparDadosAgendamento: () => {},
-    carregarDadosAgendamento: () => {} // Correção: substitua por uma função vazia
+    carregarDadosAgendamento: () => {} 
 
 });
 
@@ -82,11 +42,15 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
     const [dadosEtapa3, setDadosEtapa3] = useState<DadosEtapa3 | null>(null);
     const [dadosEtapa4, setDadosEtapa4] = useState<DadosEtapa4 | null>(null);
     const [dadosEtapa5, setDadosEtapa5] = useState<DadosEtapa5 | null>(null);
+    const [estaAvancando, setEstaAvancando] = useState(true);
 
     const salvarDadosEtapa1 = (dados: DadosEtapa1) => {
-        console.log("Salvando dados da Etapa 1:", dados);
-        setDadosEtapa1(dados);
-    };
+    console.log("Salvando dados da Etapa 1:", dados);
+    setDadosEtapa1(dados);
+
+
+};
+    
 
     const salvarDadosEtapa2 = (dados: DadosEtapa2) => {
         console.log("Salvando dados da Etapa 2:", dados);
@@ -120,11 +84,15 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
 
 
     const carregarDadosAgendamento = (dados: any) => {
+
+        console.log("Carregando dados no contexto:", dados);
+
+
         setDadosEtapa1({
             dataSelecionada: dados.datadacirurgia,
             horarioInicio: dados.horainicio,
             duracao: dados.duracao,
-            cirurgioesSelecionados: dados.Cirurgiaos ? dados.Cirurgiaos.map(c => c.id) : [],
+            cirurgioesSelecionados: dados.Cirurgiaos ? dados.Cirurgiaos.map((c: { id: number }) => c.id) : [],
             statusId: dados.statusId,
             hospitalId: dados.hospitalId,
             setorId: dados.setorId,
@@ -133,12 +101,13 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
     
         setDadosEtapa2({
             pacienteId: dados.pacienteId,
-            // ... outros campos da Etapa 2
+            pacienteProvisorioId: dados.pacienteProvisorioId,
+            statusPaciente: dados.statusPaciente,
         });
     
         setDadosEtapa3({
-            procedimentosSelecionados: dados.Procedimentos ? dados.Procedimentos.map(p => p.id) : [],
-            conveniosSelecionados: dados.Convenios ? dados.Convenios.map(c => c.id) : [],
+            procedimentosSelecionados: dados.Procedimentos ? dados.Procedimentos.map((p: { id: number }) => p.id) : [],
+            conveniosSelecionados: dados.Convenios ? dados.Convenios.map((c: { id: number }) => c.id) : [],
             lateralidade: dados.lateralidade,
             planoId: dados.planoId,
             matricula: dados.matricula,
@@ -181,6 +150,8 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
             dadosEtapa5, salvarDadosEtapa5,
             limparDadosAgendamento,
             carregarDadosAgendamento,
+            estaAvancando,
+            setEstaAvancando,
         }}>
             {children}
         </AgendamentoContext.Provider>

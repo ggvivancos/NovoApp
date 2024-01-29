@@ -170,6 +170,9 @@ const Etapa5Agendamento: React.FC<Etapa5Props> = ({ irParaProximaEtapa, irParaEt
             
         };
 
+        console.log("Dados da Etapa 5 antes de salvar:", dadosEtapa5);
+
+
         salvarDadosEtapa5(dadosEtapa5);
     irParaProximaEtapa();
 };

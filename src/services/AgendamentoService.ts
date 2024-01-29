@@ -1,4 +1,7 @@
 import * as crudService from './crudservice';
+import { AgendamentoData } from '../types'; // Ajuste o caminho conforme necessário
+
+
 
 const BASE_URL = 'http://10.0.2.2:5000/api';
 const URL_AGENDAMENTO = '/agendamentos';
@@ -24,45 +27,19 @@ interface FornecedorData {
 
 
 
-export interface AgendamentoData {
-    pacienteId: number;
-    anestesistaId?: number;
-    grupodeanestesiaId?: number;
-    hospitalId: number;
-    setorId?: number | null;
-    statusId: number;
-    SaladeCirurgiaId?: number;
-    horainicio: string;
-    duracao: string;
-    utiPedida: boolean;
-    utiConfirmada: boolean;
-    hemoderivadosPedido: boolean;
-    hemoderivadosConfirmado: boolean;
-    apa: boolean;
-    leito: string;
-    observacao?: string;
-    aviso?: string;
-    prontuario?: string;
-    lateralidade: string;
-    pacote?: boolean;
-    datadacirurgia: string;
-    procedimentos: number[];
-    cirurgioes: number[];
-    convenios: number[];
-    recursosComplementaresId?: number[];
-    opmeId?: number[];
-    fornecedoresId?: number[];
-}
-    // Adicione outros campos conforme necessário
-
 
 // As funções abaixo permanecem inalteradas, pois elas lidam com a interface AgendamentoData
 export const criarAgendamento = (data: AgendamentoData) => {
     return crudService.criar(URL_AGENDAMENTO, data);
 };
 
-export const obterAgendamentos = (limit: number = 25, page: number = 1) => {
-    return crudService.ler(`${URL_AGENDAMENTO}?limit=${limit}&page=${page}`);
+export const obterAgendamentosDetalhados = (limit: number = 25, page: number = 1) => {
+    return crudService.ler(`${URL_AGENDAMENTO}?limit=${limit}&page=${page}&includeDetails=true`);
+};
+
+// Função para obter agendamentos básicos
+export const obterAgendamentosBasicos = (limit: number = 25, page: number = 1) => {
+    return crudService.ler(`${URL_AGENDAMENTO}?limit=${limit}&page=${page}&includeDetails=false`);
 };
 
 export const atualizarAgendamento = (id: number, data: AgendamentoData) => {

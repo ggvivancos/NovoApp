@@ -6,7 +6,8 @@ import ModalCheckBox from '../../componentes/models/ModalCheckBox';
 import ModalModelo from '../../componentes/models/ModalModelo';
 import * as ProcedimentoService from '../../services/ProcedimentoService';
 import * as ConvenioService from '../../services/ConvenioService';
-import { DadosEtapa3, useAgendamento } from '../../context/AgendamentoContext';
+import { useAgendamento } from '../../context/AgendamentoContext';
+import { DadosEtapa3 } from '../../types/types';
 
 
 interface Etapa3Props {

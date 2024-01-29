@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { DadosEtapa1, useAgendamento } from '../../context/AgendamentoContext';
+import { useAgendamento } from '../../context/AgendamentoContext';
 import { View, StyleSheet, TextInput, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AppButton from '../../componentes/Botões/AppButton';
@@ -11,9 +11,11 @@ import * as StatusService from '../../services/StatusService';
 import * as HospitalService from '../../services/HospitalService';
 import * as SetorService from '../../services/SetorService';
 import * as SalaDeCirurgiaService from '../../services/SalaDeCirurgiaService';
+import { DadosEtapa1 } from '../../types/types';
+
 
 import ModalModelo from '../../componentes/models/ModalModelo';
- // Importe o serviço de status
+ // Importe o serviço de statusa
 
 
  interface Etapa1Props {
@@ -53,6 +55,8 @@ LocaleConfig.locales['pt-br'] = {
 LocaleConfig.defaultLocale = 'pt-br';
 
 const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
+
+
     const navigation = useNavigation();
     const [dataSelecionada, setDataSelecionada] = useState('');
     const [horarioInicio, setHorarioInicio] = useState('');
@@ -75,7 +79,20 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
     const [mostrarModalSalaDeCirurgia, setMostrarModalSalaDeCirurgia] = useState(false);
     const [setoresFiltrados, setSetoresFiltrados] = useState<Setor[]>([]);
     const [salasDeCirurgiaFiltradas, setSalasDeCirurgiaFiltradas] = useState<SalaDeCirurgia[]>([]);
+    const [caraterprocedimento, setcaraterprocedimento] = useState('');
+    const [tipoprocedimento, settipoprocedimento] = useState('');
+    const [tentativaSubmissao, setTentativaSubmissao] = useState(false);
+    const [estaAvancando, setEstaAvancando] = useState(false);
 
+    const onChangeHorarioInicio = (text: string) => {
+        setHorarioInicio(text);
+        setErros(prevErros => ({ ...prevErros, horarioInicio: !text }));
+    };
+    
+    const onChangeDuracao = (text: string) => {
+        setDuracao(text);
+        setErros(prevErros => ({ ...prevErros, duracao: !text }));
+    };   
 
     const { dadosEtapa1, salvarDadosEtapa1 } = useAgendamento();
     const { limparDadosAgendamento } = useAgendamento();
@@ -103,22 +120,48 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
 
     useEffect(() => {
         if (dadosEtapa1) {
-            setDataSelecionada(dadosEtapa1.dataSelecionada);
-            setHorarioInicio(dadosEtapa1.horarioInicio);
-            setDuracao(dadosEtapa1.duracao);
-            setCirurgioesSelecionados(dadosEtapa1.cirurgioesSelecionados);
-            // Defina o status selecionado com base no ID armazenado em dadosEtapa1.statusId
-            const statusEncontrado = status.find(s => s.id === dadosEtapa1.statusId);
-            if (statusEncontrado) {
-                setStatusSelecionado(statusEncontrado);
-            }
-        }
-    }, [dadosEtapa1]);
+            console.log("Dados da etapa 1 recebidos no componente:", dadosEtapa1);
     
+            // Verificações para garantir que não estamos definindo estados com undefined
+            if (dadosEtapa1.dataSelecionada) setDataSelecionada(dadosEtapa1.dataSelecionada);
+            if (dadosEtapa1.horarioInicio) setHorarioInicio(dadosEtapa1.horarioInicio);
+            if (dadosEtapa1.duracao) setDuracao(dadosEtapa1.duracao);
+            if (dadosEtapa1.cirurgioesSelecionados) setCirurgioesSelecionados(dadosEtapa1.cirurgioesSelecionados);
+            if (dadosEtapa1.caraterprocedimento) setcaraterprocedimento(dadosEtapa1.caraterprocedimento);
+            if (dadosEtapa1.tipoprocedimento) settipoprocedimento(dadosEtapa1.tipoprocedimento);
+    
+            const statusEncontrado = status.find(s => s.id === dadosEtapa1.statusId);
+            if (statusEncontrado) setStatusSelecionado(statusEncontrado);
+    
+            const hospitalEncontrado = hospitais.find(h => h.id === dadosEtapa1.hospitalId);
+            if (hospitalEncontrado) setHospitalSelecionado(hospitalEncontrado);
+    
+            const setorEncontrado = setores.find(s => s.id === dadosEtapa1.setorId);
+            if (setorEncontrado) setSetorSelecionado(setorEncontrado);
+    
+            const salaEncontrada = salasDeCirurgia.find(s => s.id === dadosEtapa1.salaDeCirurgiaId);
+            if (salaEncontrada) setSalaDeCirurgiaSelecionada(salaEncontrada);
+        }
+    }, [dadosEtapa1, status, hospitais, setores, salasDeCirurgia]);
     
 
     useEffect(() => {
+        console.log("Estado de 'estaAvancando' alterado para:", estaAvancando);
+    }, [estaAvancando]);
+    
+    
+    useEffect(() => {
+        console.log("useEffect em Etapa1Agendamento: dadosEtapa1 atualizados, estaAvancando:", estaAvancando);
+
+        if (dadosEtapa1 && estaAvancando) {
+            irParaProximaEtapa();
+        }
+    }, [dadosEtapa1, estaAvancando, irParaProximaEtapa]);
+
+    useEffect(() => {
         CirurgiaoService.obterCirurgioes().then(response => {
+            console.log("Cirurgiões carregados:", response.data); // Adicione este log
+
             setCirurgioes(response.data);
         }).catch(error => {
             console.error('Erro ao buscar cirurgiões:', error);
@@ -137,19 +180,24 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
 
     
 
-    const selecionarStatus = (id:number) => {
+    const selecionarStatus = (id: number) => {
+        console.log("selecionarStatus chamada com:", id);
+
         const statusEscolhido = status.find(s => s.id === id);
         setStatusSelecionado(statusEscolhido);
         setMostrarModalStatus(false);
-
+        setErros(prevErros => ({ ...prevErros, status: !statusEscolhido }));
+    
     };
     
 
     const onDayPress = (day: { dateString: string }) => {
         const [year, month, dayOfMonth] = day.dateString.split('-');
         const formattedDate = `${dayOfMonth}/${month}/${year}`;
+        console.log("Data selecionada:", formattedDate);
         setDataSelecionada(formattedDate);
         setMostrarCalendario(false);
+        setErros(prevErros => ({ ...prevErros, data: !formattedDate }));
     };
 
     const formatarHorario = (value: string, setter: React.Dispatch<React.SetStateAction<string>>) => {
@@ -163,13 +211,16 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
         setter(formatted);
     };
 
+      
+
     const selecionarCirurgiao = (id: number) => {
         const jaSelecionado = cirurgioesSelecionados.includes(id);
-        if (jaSelecionado) {
-            setCirurgioesSelecionados(cirurgioesSelecionados.filter(item => item !== id));
-        } else {
-            setCirurgioesSelecionados([...cirurgioesSelecionados, id]);
-        }
+        const novosSelecionados = jaSelecionado 
+            ? cirurgioesSelecionados.filter(item => item !== id) 
+            : [...cirurgioesSelecionados, id];
+        console.log("Cirurgião selecionado/desselecionado:", id, "Novos selecionados:", novosSelecionados);
+        setCirurgioesSelecionados(novosSelecionados);
+        setErros(prevErros => ({ ...prevErros, cirurgioes: novosSelecionados.length === 0 }));
     };
 
     const removerCirurgiao = (id: number) => {
@@ -178,18 +229,121 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
 
     const renderCirurgiaoBox = (id: number) => {
         const cirurgiao = cirurgioes.find(c => c.id === id);
+
+        if (!cirurgiao) {
+            return null; // Ou renderize algo que indique que o cirurgião não foi encontrado
+        }
+    
         return (
-            <View key={id} style={styles.cirurgiaoBox}>
-                <Text style={styles.cirurgiaoBoxText}>{cirurgiao?.nome}</Text>
+            <View key={id.toString()} style={styles.cirurgiaoBox}>
+                <Text style={styles.cirurgiaoBoxText}>{cirurgiao.nome}</Text>
                 <TouchableOpacity onPress={() => removerCirurgiao(id)} style={styles.cirurgiaoBoxRemove}>
                     <Text style={styles.cirurgiaoBoxRemoveText}>X</Text>
                 </TouchableOpacity>
             </View>
         );
     };
+    
+    const selecionarcaraterprocedimento = (valor: string) => {
+        console.log("selecionarcaraterprocedimento chamada com:", valor);
+        setcaraterprocedimento(valor);
+        setErros(prevErros => ({ ...prevErros, caraterprocedimento: !valor }));
+    };
 
-    // Função para salvar os dados da etapa 1 e navegar para a próxima etapa
+    const selecionartipoprocedimento = (valor: string) => {
+        settipoprocedimento(valor);
+        setErros(prevErros => ({ ...prevErros, tipoprocedimento: !valor }));
+    };
+    
+
+    
+
+    useEffect(() => {
+        const verificarErrosIniciais = () => {
+            setErros({
+                caraterprocedimento: tentativaSubmissao && caraterprocedimento === '',
+                tipoprocedimento: tentativaSubmissao && tipoprocedimento === '',
+                hospital: tentativaSubmissao && hospitalSelecionado === null,
+                setor: tentativaSubmissao && setorSelecionado === null,
+                status: tentativaSubmissao && statusSelecionado === null,
+                data: tentativaSubmissao && dataSelecionada === '',
+                duracao: tentativaSubmissao && duracao === '',
+                cirurgioes: tentativaSubmissao && cirurgioesSelecionados.length === 0,
+            });
+        };
+    
+        verificarErrosIniciais();
+    }, [tentativaSubmissao, caraterprocedimento, tipoprocedimento, hospitalSelecionado, setorSelecionado, statusSelecionado, dataSelecionada, duracao, cirurgioesSelecionados]);
+    
+    
+    const temErro = (campo: keyof typeof erros) => {
+        return tentativaSubmissao && erros[campo];
+    };
+    
+    const [erros, setErros] = useState({
+        caraterprocedimento: false,
+        tipoprocedimento: false,
+        hospital: false,
+        setor: false,
+        status: false,
+        data: false,
+        duracao: false,
+        cirurgioes: false,
+    });
+
+    const nomesCampos = {
+        caraterprocedimento: "Caráter do Procedimento",
+        tipoprocedimento: "Tipo de Atendimento",
+        hospital: "Hospital",
+        setor: "Setor",
+        status: "Status",
+        data: "Data",
+        duracao: "Duração",
+        cirurgioes: "Cirurgiões",
+    };
+
+
+
+
     const salvarEtapa1 = () => {
+        
+       
+        setTentativaSubmissao(true); // Ativa a flag de tentativa de submissão
+
+        console.log("Estado atual dos campos:", { caraterprocedimento, tipoprocedimento, hospitalSelecionado, setorSelecionado, statusSelecionado, dataSelecionada, duracao, cirurgioesSelecionados });
+
+
+        let novosErros = {
+        caraterprocedimento: !caraterprocedimento,
+        tipoprocedimento: !tipoprocedimento,
+        hospital: !hospitalSelecionado,
+        setor: !setorSelecionado,
+        status: !statusSelecionado,
+        data: !dataSelecionada,
+        duracao: !duracao,
+        cirurgioes: cirurgioesSelecionados.length === 0,
+    };
+
+    console.log("Novos erros identificados:", novosErros);
+
+
+    setErros(novosErros);
+
+    // Verifica se algum campo obrigatório está vazio
+    if (Object.values(novosErros).some(erro => erro)) {
+        let camposComErro = Object.keys(novosErros)
+            .filter(campo => novosErros[campo as keyof typeof novosErros])
+            .map(campo => nomesCampos[campo as keyof typeof nomesCampos]);
+
+        Alert.alert(
+            "Erro",
+            "Por favor, preencha os seguintes campos:\n" + 
+            camposComErro.map(campo => `- ${campo}`).join('\n'),
+            [{ text: "OK", style: "cancel" }]
+        );
+        return;
+    }
+
         const dadosEtapa1 = {
             dataSelecionada,
             horarioInicio,
@@ -198,19 +352,26 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
             statusId: statusSelecionado.id,
             hospitalId: hospitalSelecionado?.id,
             setorId: setorSelecionado?.id,
-            salaDeCirurgiaId: salaDeCirurgiaSelecionada?.id
+            salaDeCirurgiaId: salaDeCirurgiaSelecionada?.id,
+            caraterprocedimento, // Novo campo adicionado
+            tipoprocedimento, // Novo campo adicionado
 
         };
 
+        console.log("Dados sendo salvos na Etapa 1:", dadosEtapa1);
+        setEstaAvancando(true); // Adicione esta linha
         salvarDadosEtapa1(dadosEtapa1);
-        irParaProximaEtapa();
     };
 
     const selecionarHospital = (id: number) => {
         const hospitalEscolhido = hospitais.find(h => h.id === id);
+        console.log("Hospital selecionado:", hospitalEscolhido);
         setHospitalSelecionado(hospitalEscolhido);
         setMostrarModalHospital(false);
+        setErros(prevErros => ({ ...prevErros, hospital: !hospitalEscolhido }));
     
+
+            
         SetorService.obterSetoresPorHospital(id.toString()).then(response => {
             setSetoresFiltrados(response);
         }).catch(error => {
@@ -220,8 +381,10 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
     
     const selecionarSetor = (id: number) => {
         const setorEscolhido = setores.find(s => s.id === id);
+        console.log("Setor selecionado:", setorEscolhido);
         setSetorSelecionado(setorEscolhido);
         setMostrarModalSetor(false);
+        setErros(prevErros => ({ ...prevErros, setor: !setorEscolhido }));
     
         SalaDeCirurgiaService.obterSalasDeCirurgiaPorSetor(id.toString()).then(response => {
             setSalasDeCirurgiaFiltradas(response);
@@ -233,9 +396,10 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
     
     const selecionarSalaDeCirurgia = (id: number) => {
         const salaEscolhida = salasDeCirurgia.find(s => s.id === id);
+        console.log("Sala de cirurgia selecionada:", salaEscolhida);
         setSalaDeCirurgiaSelecionada(salaEscolhida);
         setMostrarModalSalaDeCirurgia(false);
-
+        setErros(prevErros => ({ ...prevErros, salaDeCirurgia: !salaEscolhida }));
     };
     
     
@@ -243,7 +407,7 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
         HospitalService.obterHospitais().then(response => {
             setHospitais(response.data);
             
-            const hospitalSaoLucas = response.data.find(h => h.nome === 'São Lucas');
+            const hospitalSaoLucas = response.data.find((h: any) => h.nome === 'São Lucas');
             if (hospitalSaoLucas) {
                 setHospitalSelecionado(hospitalSaoLucas);
                 SetorService.obterSetoresPorHospital(hospitalSaoLucas.id.toString()).then(responseSetores => {
@@ -278,13 +442,57 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
     
     return (
         <ScrollView style={styles.scrollView}>
+
+<Text style={styles.label}>Caráter do Procedimento</Text>
+<View style={[styles.opcoesContainer, temErro('caraterprocedimento') && styles.inputError]}>
+    {['Eletivo', 'Urgência', 'Emergência'].map((opcao) => (
+        <TouchableOpacity
+            key={opcao}
+            style={[
+                styles.opcao,
+                caraterprocedimento === opcao && styles.opcaoSelecionada,
+                temErro('caraterprocedimento') && styles.opcaoErro // Adicione esta linha
+            ]}
+            onPress={() => selecionarcaraterprocedimento(opcao)}
+        >
+            <Text style={[
+                styles.opcaoTexto,
+                caraterprocedimento === opcao && styles.opcaoTextoSelecionado
+            ]}>
+                {opcao}
+            </Text>
+        </TouchableOpacity>
+    ))}
+</View>
+
+<View style={[styles.opcoesContainer, temErro('tipoprocedimento') && styles.inputError]}>
+    {['Ambulatorial', 'Hospitalar', 'Indefinido'].map((opcao) => (
+        <TouchableOpacity
+            key={opcao}
+            style={[
+                styles.opcao,
+                tipoprocedimento === opcao && styles.opcaoSelecionada,
+                temErro('tipoprocedimento') && styles.opcaoErro // Adicione esta linha
+            ]}
+            onPress={() => selecionartipoprocedimento(opcao)}
+        >
+            <Text style={[
+                styles.opcaoTexto,
+                tipoprocedimento === opcao && styles.opcaoTextoSelecionado
+            ]}>
+                {opcao}
+            </Text>
+        </TouchableOpacity>
+    ))}
+</View>
+
         <View style={styles.container}>
             {/* Seletor de Hospital */}
             <Text style={styles.label}>Hospital</Text>
             <TouchableOpacity 
                 onPress={() => setMostrarModalHospital(true)} 
-                style={styles.inputSelector}
-            >
+                style={[styles.inputSelector, temErro('hospital') && styles.inputError]}
+                >
                 <Text style={styles.inputText}>
                     {hospitalSelecionado ? hospitalSelecionado.nome : "Selecione o hospital"}
                 </Text>
@@ -306,8 +514,8 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
                     <Text style={styles.label}>Setor</Text>
                     <TouchableOpacity 
                         onPress={() => setMostrarModalSetor(true)} 
-                        style={styles.inputSelector}
-                    >
+                        style={[styles.inputSelector, temErro('setor') && styles.inputError]}
+                        >
                         <Text style={styles.inputText}>
                             {setorSelecionado ? setorSelecionado.nome : "Selecione o setor"}
                         </Text>
@@ -349,8 +557,8 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
             <Text style={styles.label}>Status</Text>
                 <TouchableOpacity 
                     onPress={() => setMostrarModalStatus(true)} 
-                    style={styles.inputSelector}
-                >
+                    style={[styles.inputSelector, temErro('status') && styles.inputError]}
+                    >
                     <Text style={styles.inputText}>
                         {statusSelecionado.nome}
                     </Text>
@@ -369,8 +577,8 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
                 <Text style={styles.label}>Data</Text>
                 <TouchableOpacity 
                     onPress={() => setMostrarCalendario(true)} 
-                    style={styles.inputSelector}
-                >
+                    style={[styles.inputSelector, erros.data && styles.inputError]}
+                    >
                     <Text style={styles.inputText}>
                         {dataSelecionada || "Selecione a data"}
                     </Text>
@@ -400,15 +608,15 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
                     value={duracao}
                     onChangeText={(text) => formatarHorario(text, setDuracao)}
                     placeholder="HH:MM"
-                    style={styles.inputSelector}
+                    style={[styles.inputSelector, erros.duracao && styles.inputError]}
                     keyboardType="numeric"
                 />
     
                 <Text style={styles.label}>Cirurgiões</Text>
                 <TouchableOpacity 
                     onPress={() => setMostrarModalCirurgioes(true)} 
-                    style={styles.inputSelector}
-                >
+                    style={[styles.inputSelector, temErro('cirurgioes') && styles.inputError]}
+                    >
                     <View style={styles.cirurgioesContainer}>
                         {cirurgioesSelecionados.map(renderCirurgiaoBox)}
                     </View>
@@ -523,6 +731,35 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
         },
         inputHalf: {
             width: '48%', // Aproximadamente metade da largura para duas colunas
+        },
+        opcoesContainer: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            marginBottom: 20,
+        },
+        opcao: {
+            padding: 10,
+            borderWidth: 1,
+            borderColor: '#ddd',
+            borderRadius: 10,
+            width: '30%', // Aproximadamente um terço da largura para três colunas
+        },
+        opcaoSelecionada: {
+            backgroundColor: 'black', // Cor de fundo para opção selecionada
+        },
+        opcaoTexto: {
+            textAlign: 'center',
+            color: 'black',
+        },
+        opcaoTextoSelecionado: {
+            color: 'white',
+            fontWeight: 'bold',
+        },
+        inputError: {
+            borderColor: 'red',
+        },
+        opcaoErro: {
+            borderColor: 'red',
         },
     });
     

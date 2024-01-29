@@ -9,10 +9,12 @@ interface ModalPacienteProps {
     onPacienteCreated: (nome: string) => void;
     pacientes: Paciente[];
     title?: string;
+    onPacienteProvisorioCreated?: (nome: string) => void;
+
 }
 
 const ModalPaciente: React.FC<ModalPacienteProps> = ({
-    isVisible, onDismiss, onPacienteSelected, onPacienteCreated, pacientes, title = "Selecione um paciente"
+    isVisible, onDismiss, onPacienteSelected, onPacienteCreated, onPacienteProvisorioCreated, pacientes, title = "Selecione um paciente"
 }) => {
     const [searchText, setSearchText] = useState('');
     const [filteredPacientes, setFilteredPacientes] = useState<Paciente[]>([]);
@@ -24,9 +26,21 @@ const ModalPaciente: React.FC<ModalPacienteProps> = ({
     }, [searchText, pacientes]);
 
     const handleCreateNewPaciente = () => {
+        console.log("Opção selecionada para criar novo paciente:", searchText);
+
         onPacienteCreated(searchText);
         onDismiss();
     };
+
+    const handleCreateNewPacienteProvisorio = () => {
+        console.log("Opção selecionada para criar paciente provisório:", searchText);
+
+        if (onPacienteProvisorioCreated) {
+            onPacienteProvisorioCreated(searchText);
+        }
+        onDismiss();
+    };
+    
 
     return (
         <Modal
@@ -61,14 +75,15 @@ const ModalPaciente: React.FC<ModalPacienteProps> = ({
                     </View>
 
                     {searchText && !filteredPacientes.length && (
+                    <>
                         <TouchableOpacity onPress={handleCreateNewPaciente} style={styles.createNewButton}>
                             <Text style={styles.createNewText}>Criar novo paciente: {searchText}</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity onPress={handleCreateNewPacienteProvisorio} style={styles.createNewButton}>
+                            <Text style={styles.createNewText}>Criar paciente provisório: {searchText}</Text>
+                        </TouchableOpacity>
+                    </>
                     )}
-
-                    <TouchableOpacity style={styles.modalCloseButton} onPress={onDismiss}>
-                        <Text style={styles.modalCloseButtonText}>Fechar</Text>
-                    </TouchableOpacity>
                 </View>
             </View>
         </Modal>
