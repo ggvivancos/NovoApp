@@ -20,8 +20,6 @@ import { PacienteData } from '../../types';
 import { PacienteProvisorioData } from '../../types';
 import { AgendamentoData } from '../../types';
 import { DadosAgendamentoApi } from '../../types';
-import { DetalhesAgendamento, Fio } from '../../types/DetalhesAgendamento';
-
 
 
 interface Etapa6AgendamentoProps {
@@ -29,21 +27,11 @@ interface Etapa6AgendamentoProps {
     irParaEtapaAnterior: () => void;
   }
 
-  interface DetailRowProps {
-    label: string;
-    value?: string | null;
-}
-
-interface DetailListProps {
-    label: string;
-    items?: string[] | null;
-}
-
 
   const Etapa6Agendamento: React.FC<Etapa6AgendamentoProps> = ({ dadosAgendamento, irParaEtapaAnterior }) => {
     const navigation = useNavigation();
     const { dadosEtapa1, dadosEtapa2, dadosEtapa3, dadosEtapa4, dadosEtapa5, limparDadosAgendamento } = useContext(AgendamentoContext);
-    const [detalhesAgendamento, setDetalhesAgendamento] = useState<DetalhesAgendamento | null>(null);
+    const [detalhesAgendamento, setDetalhesAgendamento] = useState<Array<{ label: string, value: string }>>([]);
     const [nomesCirurgioes, setNomesCirurgioes] = useState<string[]>([]);
     const [nomesConvenios, setNomesConvenios] = useState<string[]>([]);
     const [nomesProcedimentos, setNomesProcedimentos] = useState<string[]>([]);
@@ -147,141 +135,129 @@ interface DetailListProps {
     };
     
     
+    
+
+    
+
+    const buscarNomesCirurgioes = async () => {
+        try {
+            // Certifique-se de que cirurgioesId está presente em dadosCombinados e é um array
+            const cirurgioesId = dadosCombinados.cirurgioesSelecionados || [];
+            const nomesCirurgioes = await Promise.all(
+                cirurgioesId.map(async (id: number) => {
+                    const cirurgiao = await CirurgiaoService.obterCirurgiaoPorId(id.toString());
+                    return cirurgiao.nome;
+                })
+            );
+            setNomesCirurgioes(nomesCirurgioes);
+        } catch (error) {
+            console.error("Erro ao buscar nomes dos cirurgiões:", error);
+        }
+    };
+
+
+    const buscarNomesConvenios = async () => {
+        try {
+            const conveniosId = dadosCombinados.conveniosSelecionados || [];
+            const nomesConvenios = await Promise.all(
+                conveniosId.map(async (id) => {
+                    const convenio = await ConvenioService.obterConvenioPorId(`${id}`);
+                    return convenio.nome; // Supondo que o serviço retorne um objeto com a propriedade 'nome'
+                })
+            );
+            setNomesConvenios(nomesConvenios);
+        } catch (error) {
+            console.error("Erro ao buscar nomes dos convênios:", error);
+        }
+    };
+
+    const buscarNomesProcedimentos = async () => {
+        try {
+            const procedimentosId = dadosCombinados.procedimentosSelecionados || [];
+            const nomesProcedimentos = await Promise.all(
+                procedimentosId.map(async (id) => {
+                    const procedimento = await ProcedimentoService.obterProcedimentoPorId(`${id}`);
+                    return procedimento.nome; // Supondo que o serviço retorne um objeto com a propriedade 'nome'
+                })
+            );
+            setNomesProcedimentos(nomesProcedimentos);
+        } catch (error) {
+            console.error("Erro ao buscar nomes dos procedimentos:", error);
+        }
+    };
+
+    const buscarNomeHospital = async () => {
+        if (dadosCombinados.hospitalId) {
+            const hospital = await HospitalService.obterHospitalPorId(dadosCombinados.hospitalId.toString());
+            console.log("Hospital:", hospital); // Adicione esta linha para depuração
+
+            setNomeHospital(hospital.nomeHospital);
+            console.log("Nome do Hospital atualizado:", hospital.nome); // Verifique se esta linha é exibida no log
+
+        }
+    };
+    
+    const buscarNomeAnestesista = async () => {
+        if (dadosCombinados.anestesistaSelecionado) {
+            const anestesista = await AnestesistaService.obterAnestesistaPorId(dadosCombinados.anestesistaSelecionado.toString());
+            console.log("Anestesista:", anestesista); // Adicione esta linha para depuração
+
+            setNomeAnestesista(anestesista.nomecompleto);
+        }
+    };
+    
+
     useEffect(() => {
-        const fetchAgendamentoDetalhes = async () => {
-            if (dadosAgendamento.id) {
-                try {
-                    const detalhes = await AgendamentoService.obterAgendamentoPorId(dadosAgendamento.id);
-                    setDetalhesAgendamento(detalhes);
-                } catch (error) {
-                    console.error("Erro ao buscar detalhes do agendamento:", error);
-                    Alert.alert("Erro", "Não foi possível obter os detalhes do agendamento.");
-                }
-            }
-        };
-        fetchAgendamentoDetalhes();
-    }, [dadosAgendamento.id]);
+        buscarNomesCirurgioes();
+        buscarNomesConvenios();
+        buscarNomesProcedimentos();
+        buscarNomeHospital();
+        buscarNomeAnestesista();
+    }, []);
 
     
-
-    const DetailRow: React.FC<DetailRowProps> = ({ label, value }) => (
-        value ? (
-            <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>{label}:</Text>
-                <Text style={styles.detailValue}>{value}</Text>
-            </View>
-        ) : null
-    );
-    
-    // Atualizando a função DetailList para usar a interface DetailListProps
-    const DetailList: React.FC<DetailListProps> = ({ label, items }) => (
-        items && items.length > 0 ? (
-            <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>{label}:</Text>
-                <Text style={styles.detailValue}>{items.join(', ')}</Text>
-            </View>
-        ) : null
-    );
-
-    const formatDate = (dateString: string | number | Date) => {
-        const date = new Date(dateString);
-        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
-    };
-    
-    // Função para formatar a hora para o formato HH:MM
-    const formatTime = (timeString: any) => {
-        const time = new Date(`1970-01-01T${timeString}Z`);
-        return time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
-    };
-
-    const DetailFios: React.FC<{fios: Fio[]}> = ({ fios }) => (
-        fios.length > 0 ? (
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Fios:</Text>
-            {fios.map((fio, index) => (
-              <Text key={index} style={styles.detailValue}>{`${fio.nome}: ${fio.quantidadeNecessaria || 'N/A'}`}</Text>
-            ))}
-          </View>
-        ) : null
-      );
-
-      useEffect(() => {
-        const fetchAgendamentoDetalhes = async () => {
-            // Sua lógica existente para buscar detalhes do agendamento
-        };
-        fetchAgendamentoDetalhes();
-    }, [dadosAgendamento.id]);
-    
-    // Preparação dos detalhes dos fios com a quantidade necessária
-    let detalhesFios = [];
-    if (detalhesAgendamento && detalhesAgendamento.Fios) {
-        detalhesFios = detalhesAgendamento.Fios.map(fio => {
-            return `${fio.nome} (Quantidade necessária: ${fio.quantidadeNecessaria})`;
-        });
-    }
-    
-      
-    
-  
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.title}>Detalhes do Agendamento</Text>
-            <Text style={styles.subtitle}>Revise os dados e salve e agendamento</Text>
-
-            <View style={styles.card}>
-                {/* Dados básicos do agendamento */}
-                <DetailRow label="Data da Cirurgia" value={detalhesAgendamento?.datadacirurgia ? formatDate(detalhesAgendamento.datadacirurgia) : 'N/A'} />
-                <DetailRow label="Hora de Início" value={detalhesAgendamento?.horainicio ? formatTime(detalhesAgendamento.horainicio) : 'N/A'} />
-                <DetailRow label="Duração" value={detalhesAgendamento?.duracao ? formatTime(detalhesAgendamento.duracao) : 'N/A'} />
-                <DetailRow label="Caráter do Procedimento" value={detalhesAgendamento?.caraterprocedimento || 'N/A'} />
-                <DetailRow label="Tipo de Procedimento" value={detalhesAgendamento?.tipoprocedimento || 'N/A'} />
-                <DetailRow label="Lateralidade" value={detalhesAgendamento?.lateralidade || 'N/A'} />
-                <DetailRow label="Matrícula" value={detalhesAgendamento?.matricula || 'N/A'} />
-                <DetailRow label="UTI Pedida" value={detalhesAgendamento?.utiPedida ? 'Sim' : 'Não'} />
-                <DetailRow label="UTI Confirmada" value={detalhesAgendamento?.utiConfirmada ? 'Sim' : 'Não'} />
-                <DetailRow label="Hemoderivados Pedido" value={detalhesAgendamento?.hemoderivadosPedido ? 'Sim' : 'Não'} />
-                <DetailRow label="Hemoderivados Confirmado" value={detalhesAgendamento?.hemoderivadosConfirmado ? 'Sim' : 'Não'} />
-                <DetailRow label="APA" value={detalhesAgendamento?.apa ? 'Sim' : 'Não'} />
-                <DetailRow label="Leito" value={detalhesAgendamento?.leito || 'N/A'} />
-                <DetailRow label="Aviso" value={detalhesAgendamento?.aviso || 'N/A'} />
-                <DetailRow label="Prontuário" value={detalhesAgendamento?.prontuario || 'N/A'} />
-                <DetailRow label="Pacote" value={detalhesAgendamento?.pacote ? 'Sim' : 'Não'} />
-                <DetailRow label="Observações" value={detalhesAgendamento?.observacoes || 'N/A'} />
-                <DetailRow label="Tipo de Acomodação" value={detalhesAgendamento?.tipoDeAcomodacao || 'N/A'} />
-                <DetailRow label="Mudança de Acomodação" value={detalhesAgendamento?.mudancaDeAcomodacao ? 'Sim' : 'Não'} />
-    
-                {/* Detalhes de relacionamentos */}
-                <DetailRow label="Hospital" value={detalhesAgendamento?.Hospital?.nome || 'N/A'} />
-                <DetailRow label="Setor" value={detalhesAgendamento?.Setor?.nome || 'N/A'} />
-                <DetailRow label="Grupo de Anestesia" value={detalhesAgendamento?.GrupoDeAnestesium?.nome || 'N/A'} />
-                <DetailRow label="Sala de Cirurgia" value={detalhesAgendamento?.SalaDeCirurgia?.nome || 'N/A'} />
-                {/* Renderização condicional do paciente ou paciente provisório */}
-            {detalhesAgendamento?.Paciente && (
-                <DetailRow label="Paciente" value={detalhesAgendamento.Paciente.nomecompleto} />
+        <Text style={styles.title}>Detalhes do Agendamento</Text>
+        <View style={styles.card}>
+            {nomesCirurgioes.length > 0 && (
+                <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Cirurgiões:</Text>
+                    <Text style={styles.detailValue}>{nomesCirurgioes.join(', ')}</Text>
+                </View>
             )}
-            {detalhesAgendamento?.PacienteProvisorio && (
-                <DetailRow label="Paciente Provisório" value={detalhesAgendamento.PacienteProvisorio.nomecompleto} />
+            {nomesConvenios.length > 0 && ( // Adiciona esta verificação e exibição para os convênios
+                <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Convênios:</Text>
+                    <Text style={styles.detailValue}>{nomesConvenios.join(', ')}</Text>
+                </View>
             )}
-    
-                {/* Listas de entidades relacionadas */}
-                <DetailList label="Procedimentos" items={detalhesAgendamento?.Procedimentos?.map(p => p.nome) || ['N/A']} />
-                <DetailList label="Cirurgiões" items={detalhesAgendamento?.Cirurgiaos?.map(c => c.nome) || ['N/A']} />
-                <DetailList label="Convênios" items={detalhesAgendamento?.Convenios?.map(c => c.nome) || ['N/A']} />
-                
-                <DetailList label="Recursos Complementares" items={detalhesAgendamento?.recursocomplementars?.map(rc => rc.recurso) || ['N/A']} />
-                <DetailList label="Fios" items={detalhesAgendamento?.Fios?.map(f => `${f.nome} (Quantidade necessária: ${f.quantidadeNecessaria})`) || ['N/A']} />
-                <DetailList label="Instrumentais" items={detalhesAgendamento?.Instrumentals?.map(i => i.nome) || ['N/A']} />
-                <DetailList label="OPMEs" items={detalhesAgendamento?.OPMEs?.map(opme => opme.nome) || ['N/A']} />
-                <DetailList label="Fornecedores" items={detalhesAgendamento?.Fornecedors?.map(f => f.nome) || ['N/A']} />
+            {nomesProcedimentos.length > 0 && ( // Adiciona esta verificação e exibição para os procedimentos
+                <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Procedimentos:</Text>
+                    <Text style={styles.detailValue}>{nomesProcedimentos.join(', ')}</Text>
+                </View>
+            )}
+            <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Hospital:</Text>
+                <Text style={styles.detailValue}>{nomeHospital}</Text>
             </View>
+            
+            <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Anestesista:</Text>
+                <Text style={styles.detailValue}>{nomeAnestesista}</Text>
+            </View>
+
+
+            {/* Repita para outros detalhes do agendamento */}
+        </View>
             <View style={styles.buttonGroup}>
                 <AppButton title="Editar" onPress={() => navigation.goBack()} />
-                <AppButton title="Salvar" onPress={finalizarAgendamento} />
+                <AppButton title="Salvar e Finalizar" onPress={finalizarAgendamento} />
             </View>
         </ScrollView>
     );
-    
 };
 
 
@@ -296,12 +272,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20,
         fontWeight: 'bold',
-        color: '#343a40',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    subtitle: {
-        fontSize: 16,
         color: '#343a40',
         marginBottom: 20,
         textAlign: 'center',

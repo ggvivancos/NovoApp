@@ -9,6 +9,13 @@ import * as ConvenioService from '../../services/ConvenioService';
 import { useAgendamento } from '../../context/AgendamentoContext';
 import { DadosEtapa3 } from '../../types/types';
 
+interface ErrosEtapa3 {
+    procedimentosSelecionados: boolean;
+    conveniosSelecionados: boolean;
+    lateralidade: boolean;
+    // Adicione outros campos conforme necessário
+}
+
 
 interface Etapa3Props {
     irParaProximaEtapa: () => void;
@@ -36,8 +43,23 @@ const Etapa3Agendamento: React.FC<Etapa3Props> = ({ irParaProximaEtapa, irParaEt
     const [mostrarModalConvenios, setMostrarModalConvenios] = useState(false);
     const [mostrarModalPlano, setMostrarModalPlano] = useState(false);
     const { dadosEtapa2, dadosEtapa3, salvarDadosEtapa3} = useAgendamento();
-    const { limparDadosAgendamento } = useAgendamento();
+    const [etapaPreparada, setEtapaPreparada] = useState(false);
 
+    const { limparDadosAgendamento } = useAgendamento();
+    const [erros, setErros] = useState<ErrosEtapa3>({
+        procedimentosSelecionados: false,
+        conveniosSelecionados: false,
+        lateralidade: false,
+        // Inicialize outros campos conforme necessário
+    });
+
+    const nomesCampos: { [key: string]: string } = {
+        procedimentosSelecionados: "Procedimentos",
+        conveniosSelecionados: "Convênios",
+        lateralidade: "Lateralidade",
+        // Adicione outros campos conforme necessário
+    };
+    
     const cancelarAgendamento = () => {
         Alert.alert(
             "Cancelar Agendamento",
@@ -58,6 +80,38 @@ const Etapa3Agendamento: React.FC<Etapa3Props> = ({ irParaProximaEtapa, irParaEt
         );
     };
 
+    
+    const validarEtapa3 = () => {
+        let novosErros: ErrosEtapa3 = {
+            procedimentosSelecionados: procedimentosSelecionados.length === 0,
+            conveniosSelecionados: conveniosSelecionados.length === 0,
+            lateralidade: lateralidade === '',
+            // Adicione outras verificações conforme necessário
+        };
+    
+        setErros(novosErros);
+    
+        // Verifica se algum campo obrigatório está vazio
+        if (Object.values(novosErros).some(erro => erro)) {
+            let camposComErro = Object.keys(novosErros)
+                .filter(campo => novosErros[campo as keyof typeof novosErros])
+                .map(campo => nomesCampos[campo as keyof typeof nomesCampos]);
+    
+            Alert.alert(
+                "Erro",
+                "Por favor, preencha os seguintes campos obrigatórios:\n" + 
+                camposComErro.map(campo => `- ${campo}`).join('\n'),
+                [{ text: "OK", style: "cancel" }]
+            );
+            return false;
+        }
+    
+        return true;
+    };
+    
+    
+   
+
 
     useEffect(() => {
         // Verifica se há dados salvos para a Etapa 3 no contexto
@@ -68,31 +122,46 @@ const Etapa3Agendamento: React.FC<Etapa3Props> = ({ irParaProximaEtapa, irParaEt
             setLateralidade(dadosEtapa3.lateralidade);
             setMatricula(dadosEtapa3.matricula);
     
-            // Para o plano, você precisa encontrar o plano correspondente pelo ID
-            const planoEncontrado = planos.find(plano => plano.id === dadosEtapa3.planoId);
-            if (planoEncontrado) {
-                setPlanoSelecionado(planoEncontrado);
-            }
+            
         }
-    }, [dadosEtapa3, planos]);
+    }, [dadosEtapa3]);
     
     
+    const salvarEtapa3EPreparar = () => {
+        if (validarEtapa3()) {
+            salvarDadosEtapa3({
+                procedimentosSelecionados,
+                conveniosSelecionados,
+                lateralidade,
+                matricula,
+            });
     
-
-const salvarEtapa3 = () => {
-    const dadosEtapa3: DadosEtapa3 = {
-        procedimentosSelecionados,
-        conveniosSelecionados,
-        lateralidade,
-        planoId: planoSelecionado?.id || null,
-        matricula
-        // Adicione mais campos conforme necessário
+            // Após salvar pela primeira vez, marca a etapa como preparada
+            setEtapaPreparada(true);
+        } 
     };
 
-    salvarDadosEtapa3(dadosEtapa3);
-    irParaProximaEtapa(); // Ou navegue para a próxima etapa conforme necessário
-};
-
+    useEffect(() => {
+        if (etapaPreparada) {
+            // Espera um breve momento antes de proceder, para garantir que a tela tenha sido atualizada
+            setTimeout(() => {
+                salvarDadosEtapa3({
+                    procedimentosSelecionados,
+                    conveniosSelecionados,
+                    lateralidade,
+                    matricula,
+                });
+    
+                console.log("Dados salvos novamente, avançando para a próxima etapa.");
+                irParaProximaEtapa();
+            }, 50); // Ajuste este tempo conforme necessário
+    
+            // Reseta o estado para evitar repetições
+            setEtapaPreparada(false);
+        }
+    }, [etapaPreparada]);      
+    
+  
     useEffect(() => {
         ProcedimentoService.obterProcedimentos().then(response => {
             setProcedimentos(response.data);
@@ -164,106 +233,144 @@ const salvarEtapa3 = () => {
         );
     };
 
-       
-        return (
-            <ScrollView style={styles.scrollView}>
-                <View style={styles.container}>
-                    <Text style={styles.label}>Procedimentos</Text>
-                    <TouchableOpacity 
-                        onPress={() => setMostrarModalProcedimentos(true)} 
-                        style={styles.inputSelector}
-                    >
-                        <View style={styles.itemsContainer}>
-                            {procedimentosSelecionados.map(renderProcedimentoBox)}
-                        </View>
-                    </TouchableOpacity>
-    
-                    <ModalCheckBox
-                        isVisible={mostrarModalProcedimentos}
-                        onDismiss={() => setMostrarModalProcedimentos(false)}
-                        onItemSelected={selecionarProcedimento}
-                        items={procedimentos.map(procedimento => ({
-                            id: procedimento.id,
-                            label: `${procedimento.codigoTUSS} - ${procedimento.nome}`
-                        }))}
-                        selectedItems={procedimentosSelecionados}
-                        title="Selecione os Procedimentos"
-                    />
-    
-    <View style={styles.lateralidadeOpcoes}>
-    {['Direita', 'Esquerda', 'Bilateral', 'Não se Aplica'].map((opcao) => (
-        <TouchableOpacity
-            key={opcao}
-            style={[
-                styles.lateralidadeOpcao,
-                lateralidade === opcao && styles.lateralidadeOpcaoSelecionada
-            ]}
-            onPress={() => selecionarLateralidade(opcao)}
-        >
-            <Text style={[
-                styles.lateralidadeTexto,
-                lateralidade === opcao && styles.lateralidadeTextoSelecionado
-            ]}>
-                {opcao}
-            </Text>
-        </TouchableOpacity>
-    ))}
-</View>
+        // Atualiza a seleção de procedimentos e verifica se está vazio
+    const onSelectProcedimento = (id: number) => {
+        const updatedSelection = procedimentosSelecionados.includes(id)
+            ? procedimentosSelecionados.filter(item => item !== id)
+            : [...procedimentosSelecionados, id];
+        setProcedimentosSelecionados(updatedSelection);
+        // Atualiza o estado de erro para 'procedimentosSelecionados'
+        setErros(prevErros => ({ ...prevErros, procedimentosSelecionados: updatedSelection.length === 0 }));
+    };
 
+    // Atualiza a lateralidade e verifica se está vazia
+    const onSelectLateralidade = (valor: string) => {
+        setLateralidade(valor);
+        // Atualiza o estado de erro para 'lateralidade'
+        setErros(prevErros => ({ ...prevErros, lateralidade: valor === '' }));
+    };
+
+    // Atualiza a seleção de convênios e verifica se está vazio
+    const onSelectConvenio = (id: number) => {
+        const updatedSelection = conveniosSelecionados.includes(id)
+            ? conveniosSelecionados.filter(item => item !== id)
+            : [...conveniosSelecionados, id];
+        setConveniosSelecionados(updatedSelection);
+        // Atualiza o estado de erro para 'conveniosSelecionados'
+        setErros(prevErros => ({ ...prevErros, conveniosSelecionados: updatedSelection.length === 0 }));
+    };
+
+
+       
+    return (
+        <ScrollView style={styles.scrollView}>
+            <View style={styles.container}>
+                {/* Procedimentos */}
+                <Text style={styles.label}>Procedimentos</Text>
+                <TouchableOpacity 
+                    onPress={() => setMostrarModalProcedimentos(true)} 
+                    style={[styles.inputSelector, erros.procedimentosSelecionados && styles.inputError]}
+                >
+                    <View style={styles.itemsContainer}>
+                        {procedimentosSelecionados.length > 0 ? procedimentosSelecionados.map(renderProcedimentoBox) : <Text style={styles.placeholderText}>Selecione os procedimentos</Text>}
+                    </View>
+                </TouchableOpacity>
     
-                    <Text style={styles.label}>Convênios</Text>
-                    <TouchableOpacity 
-                        onPress={() => setMostrarModalConvenios(true)} 
-                        style={styles.inputSelector}
+                {/* Modal para seleção de procedimentos */}
+                <ModalCheckBox
+                    isVisible={mostrarModalProcedimentos}
+                    onDismiss={() => setMostrarModalProcedimentos(false)}
+                    onItemSelected={onSelectProcedimento}
+                    items={procedimentos.map(procedimento => ({
+                        id: procedimento.id,
+                        label: `${procedimento.codigoTUSS} - ${procedimento.nome}`
+                    }))}
+                    selectedItems={procedimentosSelecionados}
+                    title="Selecione os Procedimentos"
+                />
+    
+                            {/* Lateralidade */}
+                <View style={[styles.lateralidadeOpcoes, erros.lateralidade && styles.inputError]}>
+                {['Direita', 'Esquerda', 'Bilateral', 'Não se Aplica'].map((opcao) => (
+                    <TouchableOpacity
+                        key={opcao}
+                        style={[
+                            styles.lateralidadeOpcao,
+                            lateralidade === opcao && styles.lateralidadeOpcaoSelecionada,
+                            erros.lateralidade && styles.lateralidadeOpcaoErro
+                        ]}
+                        onPress={() => onSelectLateralidade(opcao)}
                     >
-                        <View style={styles.itemsContainer}>
-                            {conveniosSelecionados.map(renderConvenioBox)}
-                        </View>
-                    </TouchableOpacity>
-    
-                    <ModalCheckBox
-                        isVisible={mostrarModalConvenios}
-                        onDismiss={() => setMostrarModalConvenios(false)}
-                        onItemSelected={selecionarConvenio}
-                        items={convenios.map(convenio => ({ id: convenio.id, label: convenio.nome }))}
-                        selectedItems={conveniosSelecionados}
-                        title="Selecione os Convênios"
-                    />
-    
-                    <Text style={styles.label}>Plano</Text>
-                    <TouchableOpacity 
-                        onPress={() => setMostrarModalPlano(true)} 
-                        style={styles.inputSelector}
-                    >
-                        <Text style={styles.inputText}>
-                            {planoSelecionado ? planoSelecionado.nome : "Selecione um plano"}
+                        <Text style={[
+                            styles.lateralidadeTexto,
+                            lateralidade === opcao && styles.lateralidadeTextoSelecionado
+                        ]}>
+                            {opcao}
                         </Text>
                     </TouchableOpacity>
+                ))}
+            </View>
+
     
-                    <ModalModelo
-                        isVisible={mostrarModalPlano}
-                        onDismiss={() => setMostrarModalPlano(false)}
-                        onItemSelected={selecionarPlano}
-                        items={planos.map(plano => ({ id: plano.id, label: plano.nome }))}
-                        title="Selecione o Plano"
-                    />
-    
-                    <Text style={styles.label}>Matrícula</Text>
-                    <TextInput
-                        style={styles.inputSelector}
-                        onChangeText={setMatricula}
-                        value={matricula}
-                        placeholder="Digite a matrícula"
-                    />
-    
-                    <View style={styles.buttonContainer}>
-                        <AppButton title="Etapa Anterior" onPress={irParaEtapaAnterior} />
-                        <AppButton title="Cancelar" onPress={cancelarAgendamento} style={styles.cancelButton} />
-                        <AppButton title="Próxima Etapa" onPress={salvarEtapa3} />
+                {/* Convênios */}
+                <Text style={styles.label}>Convênios</Text>
+                <TouchableOpacity 
+                    onPress={() => setMostrarModalConvenios(true)} 
+                    style={[styles.inputSelector, erros.conveniosSelecionados && styles.inputError]}
+                >
+                    <View style={styles.itemsContainer}>
+                        {conveniosSelecionados.length > 0 ? conveniosSelecionados.map(renderConvenioBox) : <Text style={styles.placeholderText}>Selecione os convênios</Text>}
                     </View>
+                </TouchableOpacity>
+    
+                <ModalCheckBox
+                    isVisible={mostrarModalConvenios}
+                    onDismiss={() => setMostrarModalConvenios(false)}
+                    onItemSelected={onSelectConvenio}
+                    items={convenios.map(convenio => ({ id: convenio.id, label: convenio.nome }))}
+                    selectedItems={conveniosSelecionados}
+                    title="Selecione os Convênios"
+                />
+    
+                {/* Plano */}
+                <Text style={styles.label}>Plano</Text>
+                <TouchableOpacity 
+                    onPress={() => setMostrarModalPlano(true)} 
+                    style={styles.inputSelector}
+                >
+                    <Text style={styles.inputText}>
+                        {planoSelecionado ? planoSelecionado.nome : "Selecione um plano"}
+                    </Text>
+                </TouchableOpacity>
+    
+                {/* Modal para seleção de plano */}
+                <ModalModelo
+                    isVisible={mostrarModalPlano}
+                    onDismiss={() => setMostrarModalPlano(false)}
+                    onItemSelected={selecionarPlano}
+                    items={planos.map(plano => ({ id: plano.id, label: plano.nome }))}
+                    title="Selecione o Plano"
+                />
+    
+                {/* Matrícula */}
+                <Text style={styles.label}>Matrícula</Text>
+                <TextInput
+                    style={styles.inputSelector}
+                    onChangeText={setMatricula}
+                    value={matricula}
+                    placeholder="Digite a matrícula"
+                />
+    
+                {/* Botões de Ação */}
+                <View style={styles.buttonContainer}>
+                    <AppButton title="Etapa Anterior" onPress={irParaEtapaAnterior} />
+                    <AppButton title="Cancelar" onPress={cancelarAgendamento} style={styles.cancelButton} />
+                    <AppButton title="Próxima Etapa" onPress={salvarEtapa3EPreparar} />
                 </View>
-            </ScrollView>
-        );
+            </View>
+        </ScrollView>
+    );
+    
     };
     
     const styles = StyleSheet.create({
@@ -386,6 +493,19 @@ const salvarEtapa3 = () => {
             paddingHorizontal: 10,
             paddingVertical: 5,
             borderRadius: 20,
+        },
+        inputError: {
+            borderColor: 'red',
+        },
+        erroTexto: {
+            color: 'red',
+            fontSize: 12,
+        },
+        placeholderText: {
+            color: '#888', // Cor para o texto de placeholder
+        },
+        lateralidadeOpcaoErro: {
+            borderColor: 'red',
         },
     });
     

@@ -1,7 +1,7 @@
 import {
     AnestesistaData, HospitalData, SetorData, GrupoDeAnestesiaData, 
     SalaDeCirurgiaData, PacienteData, PacienteProvisorioData, ProcedimentoData, CirurgiaoData, 
-    ConvenioData, StatusData, OPMEData, FornecedorData, 
+    ConvenioData, StatusData, OPMEData, FornecedorData,
     RecursoComplementarData, InstrumentalData
 } from './';
 
@@ -15,10 +15,10 @@ export interface AgendamentoData {
     // Etapa 1
     id?: number; // Opcional para criação, necessário para atualização
     datadacirurgia: string;
-    horainicio: string;
+    horainicio?: string;
     duracao: string;
     hospitalId: number;
-    setorId?: number; // ID do setor
+    setorId?: number | null;
     caraterprocedimento?: string; // Novo campo, opcional
     tipoprocedimento?: string; // Novo campo, opcional
     statusId: number;
@@ -29,8 +29,8 @@ export interface AgendamentoData {
     pacienteId?: number; // ID do paciente definitivo
     pacienteProvisorioId?: number; // ID do paciente provisório
     statusPaciente: 'Definitivo' | 'Provisório'; // Status do paciente no agendamento
-    pacienteNome?: string; // Nome do paciente (opcional)
-    pacienteDados?: PacienteData; // Dados completos do paciente (opcional)
+    //pacienteNome?: string; // Nome do paciente (opcional)
+    //pacienteDados?: PacienteData; // Dados completos do paciente (opcional)
 
     // Etapa 3
     procedimentosId: number[]; // Array de IDs dos procedimentos
@@ -51,12 +51,24 @@ export interface AgendamentoData {
     aviso?: string; // Campo para aviso
     prontuario?: string; // Campo para prontuário
     pacote?: boolean; // Campo para pacote
+    tipoDeAcomodacao?: string; // Campo para tipo de acomodação
+    mudancaDeAcomodacao?: boolean; // Campo para mudança de acomodação
 
     // Etapa 5 (se houver)
     recursosComplementaresId?: number[]; // IDs dos recursos complementares
     opmeId?: number[]; // IDs de OPMEs
     fornecedoresId?: number[]; // IDs dos fornecedores
+    instrumentaisId?: number[];
+    fiosComQuantidade?: FioQuantidade[];
 
     // Outros campos conforme necessário
     observacoes?: string; // Campo para observações adicionais
+}
+
+export interface FioQuantidade {
+    id: number;
+    nome: string;
+    AgendamentoFios: {
+        quantidadeNecessaria: number;
+    }
 }

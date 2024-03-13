@@ -18,12 +18,13 @@ export type Paciente = {
 
 
     export interface DadosEtapa1 {
+        id: number | null;
         dataSelecionada: string;
-        horarioInicio: string;
+        horarioInicio?: string;
         duracao: string;
         cirurgioesSelecionados: number[];
-        statusId: number;
-        hospitalId: number; // Novo campo
+        statusId: number | null;
+        hospitalId: number | null;
         setorId: number | null; // Novo campo
         salaDeCirurgiaId: number | null; // Novo campo
         caraterprocedimento?: string; // Campo opcional
@@ -41,8 +42,8 @@ export interface DadosEtapa2 {
         procedimentosSelecionados: number[];
         conveniosSelecionados: number[];
         lateralidade: string;
-        planoId: number | null;
-        matricula: string;
+        //planoId: number | null;
+        matricula?: string;
         // Outros campos da Etapa 3, se necessário
     }
     
@@ -56,6 +57,8 @@ export interface DadosEtapa2 {
         aviso: string;
         prontuario: string;
         pacote: boolean;
+        tipoDeAcomodacao: string;
+        mudancaDeAcomodacao: boolean;
         grupoDeAnestesiaSelecionado: number | null;
         anestesistaSelecionado: number | null;
         // Outros campos da Etapa 4, se necessário
@@ -65,5 +68,19 @@ export interface DadosEtapa2 {
         materiaisEspeciais: number[];
        opmesSelecionadas: number[];
         fornecedoresSelecionados: number[];
+        instrumentaisSelecionados: number[];
+        fiosComQuantidade: FioComQuantidade[]; // Mantendo a nomenclatura mas ajustando a estrutura
+
+        observacoes?: string;
+
         // Outros campos da Etapa 5, se necessário
+    }
+
+
+    export interface FioComQuantidade {
+        id: number;
+        nome: string;
+        AgendamentoFios: {
+            quantidadeNecessaria: number;
+        };
     }

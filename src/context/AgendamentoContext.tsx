@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { DadosEtapa1, DadosEtapa2, DadosEtapa3, DadosEtapa4, DadosEtapa5 } from '../types/types';
+import { AgendamentoData, DadosAgendamentoApi } from '../types';
 
 // Defina uma interface para os dados de cada etapa
 
@@ -35,6 +36,8 @@ const AgendamentoContext = createContext<{
 
 });
 
+
+
 // Crie um componente Provider
 export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children }) => {
     const [dadosEtapa1, setDadosEtapa1] = useState<DadosEtapa1 | null>(null);
@@ -42,7 +45,12 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
     const [dadosEtapa3, setDadosEtapa3] = useState<DadosEtapa3 | null>(null);
     const [dadosEtapa4, setDadosEtapa4] = useState<DadosEtapa4 | null>(null);
     const [dadosEtapa5, setDadosEtapa5] = useState<DadosEtapa5 | null>(null);
-    const [estaAvancando, setEstaAvancando] = useState(true);
+    const [estaAvancando, _setEstaAvancando] = useState(true);
+    const setEstaAvancandoComLog = (novoValor: boolean) => {
+        console.log(`Alterando estado 'estaAvancando' de ${estaAvancando} para ${novoValor}`);
+        _setEstaAvancando(novoValor);
+    };
+    
 
     const salvarDadosEtapa1 = (dados: DadosEtapa1) => {
     console.log("Salvando dados da Etapa 1:", dados);
@@ -58,7 +66,7 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
     };
 
     const salvarDadosEtapa3 = (dados: DadosEtapa3) => {
-        console.log("Salvando dados da Etapa 3:", dados);
+        console.log("Salvando dados da Etapa 3 no contexto:", dados);
         setDadosEtapa3(dados);
     };
 
@@ -82,64 +90,94 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
             setDadosEtapa5(null);
         };
 
+        const formatDate = (dateString: string | number | Date) => {
+            const date = new Date(dateString);
+            return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+        };
+        
+        const formatTime = (timeString: string) => {
+            const time = new Date(`1970-01-01T${timeString}Z`);
+            return time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false });
+        };
 
-    const carregarDadosAgendamento = (dados: any) => {
 
-        console.log("Carregando dados no contexto:", dados);
+        const carregarDadosAgendamento = (dados: DadosAgendamentoApi) => {
+            console.log("Carregando dados no contexto:", dados);
 
-
-        setDadosEtapa1({
-            dataSelecionada: dados.datadacirurgia,
-            horarioInicio: dados.horainicio,
-            duracao: dados.duracao,
-            cirurgioesSelecionados: dados.Cirurgiaos ? dados.Cirurgiaos.map((c: { id: number }) => c.id) : [],
-            statusId: dados.statusId,
-            hospitalId: dados.hospitalId,
-            setorId: dados.setorId,
-            salaDeCirurgiaId: dados.SaladeCirurgiaId,
-        });
-    
-        setDadosEtapa2({
-            pacienteId: dados.pacienteId,
-            pacienteProvisorioId: dados.pacienteProvisorioId,
-            statusPaciente: dados.statusPaciente,
-        });
-    
-        setDadosEtapa3({
-            procedimentosSelecionados: dados.Procedimentos ? dados.Procedimentos.map((p: { id: number }) => p.id) : [],
-            conveniosSelecionados: dados.Convenios ? dados.Convenios.map((c: { id: number }) => c.id) : [],
-            lateralidade: dados.lateralidade,
-            planoId: dados.planoId,
-            matricula: dados.matricula,
-            // ... outros campos da Etapa 3
-        });
-    
-        setDadosEtapa4({
-            utiPedida: dados.utiPedida,
-            utiConfirmada: dados.utiConfirmada,
-            hemoderivadosPedido: dados.hemoderivadosPedido,
-            hemoderivadosConfirmado: dados.hemoderivadosConfirmado,
-            apa: dados.apa,
-            leito: dados.leito,
-            aviso: dados.aviso,
-            prontuario: dados.prontuario,
-            pacote: dados.pacote,
-            grupoDeAnestesiaSelecionado: dados.grupodeanestesiaId,
-            anestesistaSelecionado: dados.anestesistaId,
-            // ... outros campos da Etapa 4
+            const dataFormatada = formatDate(dados.datadacirurgia);
+            const horaInicioFormatada = formatTime(dados.horainicio);
+        
+            // Mapeamento de IDs para seleções que originalmente esperavam arrays de IDs ou valores simples.
+            const cirurgioesIds = dados.Cirurgiaos?.map(cirurgiao => cirurgiao.id) ?? [];
+            const procedimentosIds = dados.Procedimentos?.map(procedimento => procedimento.id) ?? [];
+            const conveniosIds = dados.Convenios?.map(convenio => convenio.id) ?? [];
+            const recursosComplementaresIds = dados.recursocomplementars?.map(recurso => recurso.id) ?? [];
+            const opmesIds = dados.OPMEs?.map(opme => opme.id) ?? [];
+            const fornecedoresIds = dados.Fornecedors?.map(fornecedor => fornecedor.id) ?? [];
+            const instrumentaisIds = dados.Instrumentals?.map(instrumental => instrumental.id) ?? [];
+            const fiosComQuantidade = dados.Fios?.map(fio => ({
+                id: fio.id,
+                nome: fio.nome,
+                AgendamentoFios: {
+                    quantidadeNecessaria: fio.AgendamentoFios.quantidadeNecessaria
+                }
+            })) ?? [];
+                    
+            setDadosEtapa1({
+                id: dados.id,
+                dataSelecionada: dados.datadacirurgia,
+                horarioInicio: dados.horainicio,
+                duracao: dados.duracao,
+                hospitalId: dados.Hospital?.id ?? null,
+                statusId: dados.Status?.id ?? null,
+                cirurgioesSelecionados: cirurgioesIds,
+                salaDeCirurgiaId: dados.SaladeCirurgia?.id ?? null,
+                setorId: dados.Setor?.id ?? null,
+                caraterprocedimento: dados.caraterprocedimento ?? '',
+                tipoprocedimento: dados.tipoprocedimento ?? '',
             });
-            
+        
+            setDadosEtapa2({
+                pacienteId: dados.Paciente?.id ?? undefined,
+                pacienteProvisorioId: dados.PacienteProvisorio?.id ?? undefined,
+                statusPaciente: dados.statusPaciente,
+            });
+        
+            setDadosEtapa3({
+                procedimentosSelecionados: procedimentosIds,
+                conveniosSelecionados: conveniosIds,
+                lateralidade: dados.lateralidade,
+                matricula: dados.matricula ?? '', // Asumindo que o campo matricula existe em PacienteData
+            });
+        
+            setDadosEtapa4({
+                utiPedida: dados.utiPedida,
+                utiConfirmada: dados.utiConfirmada,
+                hemoderivadosPedido: dados.hemoderivadosPedido,
+                hemoderivadosConfirmado: dados.hemoderivadosConfirmado,
+                apa: dados.apa,
+                leito: dados.leito,
+                aviso: dados.aviso,
+                prontuario: dados.prontuario,
+                pacote: dados.pacote,
+                tipoDeAcomodacao: dados.tipoDeAcomodacao,
+                mudancaDeAcomodacao: dados.mudancaDeAcomodacao,
+                grupoDeAnestesiaSelecionado: dados.GrupoDeAnestesium?.id ?? null,
+                anestesistaSelecionado: dados.Anestesistum?.id ?? null,
+            });
+        
             setDadosEtapa5({
-                materiaisEspeciais: dados.recursosComplementaresId ? dados.recursosComplementaresId : [],
-                opmesSelecionadas: dados.opmeId ? dados.opmeId : [],
-                fornecedoresSelecionados: dados.fornecedoresId ? dados.fornecedoresId : [],
-                // ... outros campos da Etapa 5
+                materiaisEspeciais: recursosComplementaresIds,
+                opmesSelecionadas: opmesIds,
+                fornecedoresSelecionados: fornecedoresIds,
+                instrumentaisSelecionados: instrumentaisIds,
+                fiosComQuantidade: fiosComQuantidade,
+                observacoes: dados.observacoes,
             });
-            
-    
-
-    // Adicione mais lógica de carregamento se houver mais etapas
-};
+        };
+        
+        
+        
 
     return (
         <AgendamentoContext.Provider value={{
@@ -151,7 +189,7 @@ export const AgendamentoProvider: React.FC<{children: ReactNode}> = ({ children 
             limparDadosAgendamento,
             carregarDadosAgendamento,
             estaAvancando,
-            setEstaAvancando,
+            setEstaAvancando: setEstaAvancandoComLog, // Atualizado para usar a função com log
         }}>
             {children}
         </AgendamentoContext.Provider>

@@ -345,6 +345,7 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
     }
 
         const dadosEtapa1 = {
+            id: 0,
             dataSelecionada,
             horarioInicio,
             duracao,
@@ -437,7 +438,7 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
         });
     }, []);
 
-
+    
 
     
     return (
@@ -464,6 +465,7 @@ const Etapa1Agendamento: React.FC<Etapa1Props> = ({ irParaProximaEtapa }) => {
         </TouchableOpacity>
     ))}
 </View>
+<Text style={styles.label}>Tipo do Procedimento</Text>
 
 <View style={[styles.opcoesContainer, temErro('tipoprocedimento') && styles.inputError]}>
     {['Ambulatorial', 'Hospitalar', 'Indefinido'].map((opcao) => (

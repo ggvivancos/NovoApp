@@ -25,6 +25,13 @@ interface FornecedorData {
     // Outros campos que você possa precisar
 }
 
+interface FioData {
+    id: number;
+    nome: string;
+    // Outros campos que você possa precisar
+}
+
+
 
 
 

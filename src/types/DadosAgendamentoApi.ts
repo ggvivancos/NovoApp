@@ -1,8 +1,25 @@
-import {
-    AgendamentoData, CirurgiaoData, ProcedimentoData, HospitalData, StatusData, 
-    PacienteData, ConvenioData, GrupoDeAnestesiaData, AnestesistaData, 
-    RecursoComplementarData, PacienteProvisorioData
-} from './'; // Ajuste o caminho conforme necessário
+import { AgendamentoData } from './AgendamentoData';
+import { CirurgiaoData } from './CirurgiaoData';
+import { ProcedimentoData } from './ProcedimentoData';
+import { HospitalData } from './HospitalData';
+import { StatusData } from './StatusData';
+import { PacienteData } from './PacienteData';
+import { ConvenioData } from './ConvenioData';
+import { GrupoDeAnestesiaData } from './GrupoDeAnestesiaData';
+import { AnestesistaData } from './AnestesistaData';
+import { RecursoComplementarData } from './RecursoComplementarData';
+import { PacienteProvisorioData } from './PacienteProvisorioData';
+import { OPMEData } from './OPMEData';
+import { FornecedorData } from './FornecedorData';
+import { FioAgendamentoData } from './FioAgendamentoData';
+import { InstrumentalData } from './InstrumentalData';
+import { SalaDeCirurgiaData } from './SalaDeCirurgiaData';
+import { SetorData } from './SetorData';
+import { FioData } from './FioData';
+
+
+
+
 
 export interface DadosAgendamentoApi {
     id: number;
@@ -27,6 +44,22 @@ export interface DadosAgendamentoApi {
     hemoderivadosPedido: boolean;
     hemoderivadosConfirmado: boolean;
     apa: boolean;
-    RecursosComplementares?: RecursoComplementarData[];
+    recursocomplementars?: RecursoComplementarData[];
+    OPMEs?: OPMEData[]; // Nova propriedade para representar as OPMEs do agendamento
+    Fornecedors?: FornecedorData[];
+    Fios?: FioAgendamentoData[];
+    Instrumentals?: InstrumentalData[];
+    createdAt: string;
+    updatedAt: string;
+    leito: string;
+    aviso: string;
+    pacote: boolean;
+    prontuario: string;
+    tipoDeAcomodacao: string;
+    mudancaDeAcomodacao: boolean;
+    observacoes: string;
+    SaladeCirurgia?: SalaDeCirurgiaData; // Corrigindo o nome conforme a nomenclatura do TypeScript
+    Setor?: SetorData;
+    matricula: string;
     // Adicione outros campos conforme necessário
 }

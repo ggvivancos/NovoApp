@@ -39,6 +39,10 @@ export type RootStackParamList = {
     NovoFornecedor: undefined;
     IndexOPME: undefined;
     NovoOPME: undefined;
+    IndexFio: undefined;
+    NovoFio: undefined;
+    IndexInstrumental: undefined;
+    NovoInstrumental: undefined;
     
     
     // ...

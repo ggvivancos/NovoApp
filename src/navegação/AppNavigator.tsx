@@ -35,6 +35,11 @@ import IndexFornecedor from '../telas/fornecedores/IndexFornecedor';
 import NovoFornecedor from '../telas/fornecedores/NovoFornecedor';
 import IndexOPME from '../telas/OPME/IndexOPME';
 import NovoOPME from '../telas/OPME/NovoOPME';
+import IndexInstrumental from '../telas/instrumentais/IndexInstrumental';
+import NovoInstrumental from '../telas/instrumentais/NovoInstrumental';
+import IndexFio from '../telas/fios/IndexFio';
+import NovoFio from '../telas/fios/NovoFio';
+
 
 
 const Stack = createStackNavigator();
@@ -202,6 +207,26 @@ function AppNavigator() {
         <Stack.Screen 
             name="NovoOPME" 
             component={NovoOPME}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="IndexInstrumental" 
+            component={IndexInstrumental}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="NovoInstrumental" 
+            component={NovoInstrumental}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="IndexFio" 
+            component={IndexFio}
+            options={{ headerShown: false }} 
+        />
+        <Stack.Screen 
+            name="NovoFio" 
+            component={NovoFio}
             options={{ headerShown: false }} 
         />
 

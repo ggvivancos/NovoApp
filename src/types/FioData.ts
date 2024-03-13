@@ -1,7 +1,6 @@
-// ProcedimentoData.ts
-export interface ProcedimentoData {
+// RecursoComplementarData.ts
+export interface FioData {
     id: number;
     nome: string;
-    codigoTUSS: string;
     // Adicione outros campos conforme necessário
 }

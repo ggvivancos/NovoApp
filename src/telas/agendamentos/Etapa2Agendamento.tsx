@@ -123,7 +123,7 @@ const Etapa2Agendamento: React.FC<Etapa2Props> = ({ irParaProximaEtapa, irParaEt
     
     useEffect(() => {
         carregarDadosIniciais();
-    }, [dadosEtapa2, pacienteProvisorioId]);
+    }, [dadosEtapa2]);
     
 
     useEffect(() => {
@@ -138,192 +138,52 @@ const Etapa2Agendamento: React.FC<Etapa2Props> = ({ irParaProximaEtapa, irParaEt
     }, [pacienteSelecionado, isCreatingNewPaciente, isCreatingPacienteProvisorio, isCarregandoDadosIniciais]);
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //testes re renderizações
+   
+const salvarEtapa2 = async () => {
+    if (isCreatingPacienteProvisorio && pacienteSelecionado && typeof pacienteProvisorioId === 'number') {
+        // Atualizar paciente provisório existente
+        const dadosAtualizados = {
+            id: pacienteProvisorioId, // Garantir que essa propriedade esteja presente
 
-    useEffect(() => {
-        console.log("pacienteSelecionado mudou:", pacienteSelecionado);
-    }, [pacienteSelecionado]);
-    
-    useEffect(() => {
-        console.log("isCreatingNewPaciente mudou:", isCreatingNewPaciente);
-    }, [isCreatingNewPaciente]);
-    
-    useEffect(() => {
-        console.log("isCreatingPacienteProvisorio mudou:", isCreatingPacienteProvisorio);
-    }, [isCreatingPacienteProvisorio]);
-    
-    useEffect(() => {
-        console.log("pacienteProvisorioId mudou:", pacienteProvisorioId);
-    }, [pacienteProvisorioId]);
-    
-    useEffect(() => {
-        console.log("nomeCompleto mudou:", nomeCompleto);
-    }, [nomeCompleto]);
-    
-    useEffect(() => {
-        console.log("dataDeNascimento mudou:", dataDeNascimento);
-    }, [dataDeNascimento]);
-    
-    useEffect(() => {
-        console.log("CPF mudou:", CPF);
-    }, [CPF]);
-    
-    useEffect(() => {
-        console.log("telefone mudou:", telefone);
-    }, [telefone]);
-    
-    useEffect(() => {
-        console.log("observacao mudou:", observacao);
-    }, [observacao]);
-    
-    useEffect(() => {
-        console.log("VAD mudou:", VAD);
-    }, [VAD]);
-    
-    useEffect(() => {
-        console.log("alergia mudou:", alergia);
-    }, [alergia]);
-    
-    useEffect(() => {
-        console.log("alergiaLatex mudou:", alergiaLatex);
-    }, [alergiaLatex]);
-    
-    useEffect(() => {
-        console.log("pacienteSelecionado mudou:", pacienteSelecionado);
-    }, [pacienteSelecionado]);
-    
-    useEffect(() => {
-        console.log("isCreatingNewPaciente mudou:", isCreatingNewPaciente);
-    }, [isCreatingNewPaciente]);
-    
-    useEffect(() => {
-        console.log("isCreatingPacienteProvisorio mudou:", isCreatingPacienteProvisorio);
-    }, [isCreatingPacienteProvisorio]);
-    
-    useEffect(() => {
-        console.log("pacienteProvisorioId mudou:", pacienteProvisorioId);
-    }, [pacienteProvisorioId]);
-    
+            nomecompleto: nomeCompleto,
+            datadenascimento: dataDeNascimento,
+            CPF: CPF,
+            telefone: telefone,
+            observacao: observacao,
+            VAD: VAD,
+            alergia: alergia,
+            alergiaLatex: alergiaLatex
+        };
+        await atualizarPacienteProvisorio(pacienteProvisorioId, dadosAtualizados);
+    } else if (!isCreatingPacienteProvisorio && pacienteSelecionado) {
+        // Atualizar paciente definitivo existente
+        const dadosAtualizados= {
+            id: pacienteSelecionado.id,
+            nomecompleto: nomeCompleto,
+            datadenascimento: dataDeNascimento,
+            CPF: CPF,
+            telefone: telefone,
+            observacao: observacao,
+            VAD: VAD,
+            alergia: alergia,
+            alergiaLatex: alergiaLatex,
+            idade: pacienteSelecionado.idade,
+            prontuario: pacienteSelecionado.prontuario,
+            RG: pacienteSelecionado.RG,
+            createdAt: pacienteSelecionado.createdAt,
+            updatedAt: pacienteSelecionado.updatedAt
+        };
+        await atualizarPaciente(pacienteSelecionado.id, dadosAtualizados);
+    } else if (isCreatingPacienteProvisorio) {
+        // Criar um novo paciente provisório
+        await salvarPacienteProvisorio();
+    } else {
+        // Criar um novo paciente definitivo
+        await salvarNovoPaciente();
+    }
+};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    //let dadosEtapa2: DadosEtapa2 = { statusPaciente: undefined };
-
-
-
-    const salvarEtapa2 = async () => {
-        console.log("Iniciando salvarEtapa2");
-        console.log("Paciente Selecionado:", pacienteSelecionado);
-        console.log("isCreatingNewPaciente:", isCreatingNewPaciente);
-        console.log("isCreatingPacienteProvisorio:", isCreatingPacienteProvisorio);
-        console.log("isCarregandoDadosIniciais:", isCarregandoDadosIniciais);
-        if (!pacienteSelecionado && !isCreatingNewPaciente && !isCreatingPacienteProvisorio) {
-            Alert.alert('Erro', 'Por favor, selecione ou crie um paciente antes de prosseguir.');
-            return;
-        }
-    
-        console.log("isCreatingNewPaciente:", isCreatingNewPaciente);
-        console.log("isCreatingPacienteProvisorio:", isCreatingPacienteProvisorio);
-        console.log("isCarregandoDadosIniciais:", isCarregandoDadosIniciais);
-    
-        let dadosEtapa2: DadosEtapa2 = { statusPaciente: undefined };
-    
-        console.log("Paciente Provisório ID antes de salvar:", pacienteProvisorioId); // Adicione este log
-
-        
-        if (isCreatingPacienteProvisorio) {
-            console.log("Entrou na condição isCreatingPacienteProvisorio");
-            console.log("PacienteSelecionado ID:", pacienteSelecionado ? pacienteSelecionado.id : 'null');
-            console.log("dadosEtapa2.pacienteProvisorioId:", dadosEtapa2.pacienteProvisorioId);
-            if (pacienteSelecionado && pacienteSelecionado.id === pacienteProvisorioId) {
-                console.log("Entrou na condição de atualizar paciente provisório");
-  
-                console.log("222isCreatingNewPaciente:", isCreatingNewPaciente);
-                console.log("222isCreatingPacienteProvisorio:", isCreatingPacienteProvisorio);
-                console.log("222isCarregandoDadosIniciais:", isCarregandoDadosIniciais);
-
-                const dadosAtualizados = {
-                    id: dadosEtapa2.pacienteProvisorioId, // ID do paciente
-                    nomecompleto: nomeCompleto,
-                    datadenascimento: dataDeNascimento,
-                    CPF: CPF,
-                    telefone: telefone,
-                    observacao: observacao,
-                    VAD: VAD,
-                    alergia: alergia,
-                    alergiaLatex: alergiaLatex
-                    // Adicione outros campos conforme necessário
-                };
-                if (typeof pacienteProvisorioId === 'number') {
-                    const dadosAtualizados = {
-                        id: pacienteProvisorioId,
-                    };
-    
-                    dadosEtapa2 = {
-                        pacienteProvisorioId: dadosEtapa2.pacienteProvisorioId,
-                        statusPaciente: 'Provisório'
-                    };
-                    console.log("Atualizando paciente provisório com ID:", dadosEtapa2.pacienteProvisorioId);
-                }
-            } else {
-                console.log("Entrou na condição de criar novo paciente provisório");
-                const novoPacienteProvisorioId = await salvarPacienteProvisorio();
-                console.log("444isCreatingNewPaciente:", isCreatingNewPaciente);
-                console.log("444isCreatingPacienteProvisorio:", isCreatingPacienteProvisorio);
-                console.log("4444isCarregandoDadosIniciais:", isCarregandoDadosIniciais);
-                if (!novoPacienteProvisorioId) return;
-    
-                dadosEtapa2 = {
-                    pacienteProvisorioId: novoPacienteProvisorioId,
-                    statusPaciente: 'Provisório'
-                };
-                console.log("Salvando novo paciente provisório com ID:", novoPacienteProvisorioId);
-            }
-        } else if (pacienteSelecionado) {
-            console.log("Entrou na condição de salvar paciente definitivo");
-            dadosEtapa2 = {
-                pacienteId: pacienteSelecionado.id,
-                statusPaciente: 'Definitivo'
-            };
-            console.log("Salvando paciente definitivo com ID:", pacienteSelecionado.id);
-        }
-    
-        if (dadosEtapa2.statusPaciente) {
-            console.log("Dados da Etapa 2 antes de salvar no contexto:", dadosEtapa2);
-            salvarDadosEtapa2(dadosEtapa2);
-            console.log("Dados da Etapa 2 após chamar a função salvarDadosEtapa2", dadosEtapa2);
-            setEstaAvancando(true);
-        }
-    };
-    
-    
-        
-    
-    
-
-    
+      
     
     useEffect(() => {
         if (!isCarregandoDadosIniciais) {
@@ -337,14 +197,15 @@ const Etapa2Agendamento: React.FC<Etapa2Props> = ({ irParaProximaEtapa, irParaEt
     }, [pacienteSelecionado, isCreatingPacienteProvisorio, isCarregandoDadosIniciais]);
     
     
-    
-    
 
     useEffect(() => {
-        if (dadosEtapa2 && estaAvancando) {
+        // Verifica se os dados necessários estão prontos e se é para avançar
+        if (estaAvancando) {
+            console.log('Avançando para a próxima etapa com os dados:', dadosEtapa2);
             irParaProximaEtapa();
         }
-    }, [dadosEtapa2, estaAvancando, irParaProximaEtapa]);
+    }, [estaAvancando, irParaProximaEtapa]); // Dependências para reação
+    
     
 
     const formatarDataISO = (dataISO: string) => {
@@ -504,48 +365,78 @@ const Etapa2Agendamento: React.FC<Etapa2Props> = ({ irParaProximaEtapa, irParaEt
     
         try {
             const response = await PacienteProvisorioService.atualizarPacienteProvisorio(id, dadosAtualizados);
-            if (response && response.id) {
+            console.log('Resposta da atualização do paciente provisório:', response);
+    
+            // Verifica se a resposta indica sucesso, mesmo sem um id
+            if (response && (response.id || response.success)) {
+                console.log('Paciente provisório atualizado com sucesso:', response);
                 Alert.alert('Sucesso', 'Paciente provisório atualizado com sucesso!');
-                setIsCreatingPacienteProvisorio(false);
-                setPacienteSelecionado(response);
-                setPacientes(pacientesAnteriores => 
-                    pacientesAnteriores.map(p => p.id === response.id ? response : p)
+    
+                // Atualiza o estado, mesmo se não houver um id, assumindo que a atualização foi bem-sucedida.
+                const updatedPacienteProvisorio = response.id ? response : { ...dadosAtualizados, id };
+                setPacienteSelecionado(updatedPacienteProvisorio);
+    
+                setPacientes(pacientesAnteriores =>
+                    pacientesAnteriores.map(p => p.id === updatedPacienteProvisorio.id ? updatedPacienteProvisorio : p)
                 );
-                salvarDadosEtapa2({ ...dadosEtapa2, pacienteProvisorioId: response.id, statusPaciente: 'Provisório' });
-                return response.id;
+                setEstaAvancando(true);
+                salvarDadosEtapa2({ ...dadosEtapa2, pacienteProvisorioId: updatedPacienteProvisorio.id, statusPaciente: 'Provisório' });
+    
+                return updatedPacienteProvisorio.id;
             } else {
+                console.error('A resposta da atualização do paciente provisório não corresponde ao esperado:', response);
                 Alert.alert('Erro', 'Erro ao atualizar paciente provisório. Tente novamente.');
+    
                 return null;
             }
         } catch (error) {
             console.error("Erro ao atualizar paciente provisório", error);
             Alert.alert('Erro', 'Erro ao atualizar paciente provisório. Tente novamente.');
+    
             return null;
         }
     };
+    
 
     const atualizarPaciente = async (id: number, dadosAtualizados: PacienteData) => {
         console.log("Atualizando paciente", dadosAtualizados);
     
         try {
+            console.log(`Iniciando a atualização do paciente com ID: ${id} e dados:`, dadosAtualizados);
             const response = await PacienteService.atualizarPaciente(id, dadosAtualizados);
-            if (response && response.id) {
+        
+            console.log('Resposta da atualização:', response);
+        
+            // Verifica se a resposta indica sucesso, mesmo sem um id
+            if (response && (response.id || response.success)) {
+                console.log('Paciente atualizado com sucesso:', response);
                 Alert.alert('Sucesso', 'Paciente atualizado com sucesso!');
-                setPacienteSelecionado(response);
-                setPacientes(pacientesAnteriores => 
-                    pacientesAnteriores.map(p => p.id === response.id ? response : p)
+        
+                // Atualiza o estado, mesmo se não houver um id, assumindo que a atualização foi bem-sucedida.
+                const updatedPaciente = response.id ? response : { ...dadosAtualizados, id };
+                setPacienteSelecionado(updatedPaciente);
+        
+                setPacientes(pacientesAnteriores =>
+                    pacientesAnteriores.map(p => p.id === updatedPaciente.id ? updatedPaciente : p)
                 );
-                salvarDadosEtapa2({ ...dadosEtapa2, pacienteId: response.id, statusPaciente: 'Definitivo' });
-                return response.id;
+                setEstaAvancando(true);
+                salvarDadosEtapa2({ ...dadosEtapa2, pacienteId: updatedPaciente.id, statusPaciente: 'Definitivo' });
+        
+                return updatedPaciente.id;
             } else {
+                console.error('A resposta da atualização não corresponde ao esperado:', response);
                 Alert.alert('Erro', 'Erro ao atualizar paciente. Tente novamente.');
+        
                 return null;
             }
         } catch (error) {
             console.error("Erro ao atualizar paciente", error);
             Alert.alert('Erro', 'Erro ao atualizar paciente. Tente novamente.');
+        
             return null;
         }
+        
+        
     };
     
     
